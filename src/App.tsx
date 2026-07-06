@@ -1,25 +1,17 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ChakraProvider, Container} from '@chakra-ui/react';
+import { Navbar } from './components/Navbar';
+import theme from './theme';
+import './dayssansblack.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ChakraProvider theme = {theme}>
+      {/* Основной контент страницы */}
+      <Container minW="100vw" minH="100vh" pt="100px" centerContent bgGradient = "linear(to-tr, #005959, #284159)">
+              {/* Навигационная панель */}
+              <Navbar />
+      </Container>
+    </ChakraProvider>
   );
 }
 
