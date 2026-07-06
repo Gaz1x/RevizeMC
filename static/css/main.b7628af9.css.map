@@ -1,0 +1,1 @@
+{"version":3,"file":"static/css/main.dfe5932a.css","mappings":"AAAA,WACC,yBAA4B,CAC1B,yFAEH","sources":["dayssansblack.css"],"sourcesContent":["@font-face {\n\tfont-family: 'DaysSansBlack';\n  \tsrc: url('./assets/dayssansblack.ttf') format('truetype');\n\n}"],"names":[],"sourceRoot":""}
