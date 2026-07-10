@@ -1,5 +1,5 @@
 @font-face {
 	font-family: 'DaysSansBlack';
-  	src: url('./assets/dayssansblack.ttf') format('truetype');
-
+  	src: url('./assets/DaysSansBlack.otf') format('truetype');
+  	/* src: url('./assets//dayssansblack.ttf') format('truetype'); */
 }

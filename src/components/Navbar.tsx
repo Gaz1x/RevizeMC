@@ -1,4 +1,4 @@
-import { Tooltip, Image, Box, Text, VStack, HStack, Container, useClipboard } from '@chakra-ui/react';
+import { Image, Box, Text, HStack, Container, useClipboard, useToast } from '@chakra-ui/react';
 import { useState } from 'react';
 import logo from "./images/blueLogo.png";
 
@@ -7,9 +7,34 @@ export const Navbar = () => {
   
   const [isCopied, setIsCopied] = useState(false);
 
+  const copyMessage = useToast();
+  const COPY_ID = "copy-toast";
+
   const handleCopy = () => {
     onCopy();
     setIsCopied(true);
+
+    if (!copyMessage.isActive(COPY_ID)) {
+      copyMessage({
+        id: COPY_ID,
+        position: 'bottom',
+        duration: 1000,
+        render: () => (
+          <Box
+            color="white"
+            p={4}
+            bg="#284159"
+            border="2px solid #80bFFF"
+            borderRadius="2xl"
+            boxShadow="xl"
+            textAlign="center"
+            fontFamily="body"
+          >
+            <Text>СКОПИРОВАНО</Text>
+          </Box>
+        ),
+      });
+    }
   };
 
   const handleMouseLeave = () => {
@@ -22,61 +47,73 @@ export const Navbar = () => {
     <Container
       as="nav"
       position="fixed"
-      top="2"
-      left="0"
-      right="0"
+      top="10px"
+      
+      // ИСПРАВЛЕНИЕ: Центрируем навбар
+      left="50%"
+      transform="translateX(-50%)"
+      
       zIndex="sticky"
       bg="whiteAlpha.50"
       backdropFilter="blur(12px)"
-      border="6px solid #80bFFF"
-      borderRadius="38px"
+      border="solid #80bFFF"
+      borderWidth={{xl: "6px", base: "4px"}}
+      borderRadius= {{xl : "38px", base: "26px"}}
       maxW="max-content"
-      px={4}
-      py={4}
+      px={{xl: 4, base: "14px"}}
+      py={{xl: 4, base: "1px"}}
     >
-      <HStack gap={4}>
-        <Box w={{ md: "60px", base: "80px" }} h={{ md: "60px", base: "80px" }}>
+      <HStack gap={3}>
+        <Box w={{ xl: "70px", base: "45px" }} h={{ xl: "70px", base: "45px" }}>
           <Image
             src={logo}
             alt="Логотип"
             fit="fill"
+            draggable={false} 
+            userSelect="none"
           />
         </Box>
 
-        <VStack align="flex-start" h="60px" justifyContent="space-between">
-          <Tooltip 
-            hasArrow={false} 
-            label={isCopied ? "Скопировано" : "Скопировать"} 
-            fontSize="10px"  
-            placement="right-end" 
-            color = {isCopied ? "#80BFFF" : "white"}
-            bgColor= {isCopied ? "#284159" : "#284159"}
-            closeOnClick={false} 
-          >
-            <Text 
-              fontSize={{ md: "30px", base: "30px" }}
-              bgColor="#80bFFF"
-              bgClip="text"
-              fontFamily="heading"
-              lineHeight={"24px"}
-              
-              cursor="pointer"
-              onClick={handleCopy}
-              onMouseLeave={handleMouseLeave}
-              
-              transition="all 0.45s ease-out"
-              _hover={{
-                bgColor: "#FFFFFF",
-              }}
-            >
-              RevizeMC.net
-            </Text>
-          </Tooltip>
+          <Text 
+            fontSize={{ xl: "60px", base: "30px" }}
+            bgColor="#80bFFF"
+            bgClip="text"
+            fontFamily="heading"
+            lineHeight={{ xl: "60px", base: "60px" }}
+            mb={{xl: "7px", base: "4px"}}
+            cursor="pointer"
+            onClick={handleCopy}
+            onMouseLeave={handleMouseLeave}
 
-          <Text fontSize={{ md: "22px", base: "22px" }} bgColor="white" bgClip="text" fontFamily="body" lineHeight={"26px"}>
-            Играй по-новому!
+            transition="all 0.45s ease-out"
+            sx={{
+              '@media (hover: hover) and (pointer: fine)': {
+                '&:hover': {
+                  bgColor: "#FFFFFF",
+                  transform: "scale(0.99)"
+                  
+                },
+                '&:active': { 
+                  transform: "scale(0.97)" 
+                }
+              }
+            }}
+            >
+            REVIZEMC.NET
           </Text>
-        </VStack>
+       
+        <Box
+          border="6px solid #80bFFF"
+          borderRadius="25px"
+          py="14px"
+          px="14px"
+          display = {{xl: "block", base: "none"}}
+        >
+          <Text fontSize={{ xl: "24px", base: "22px" }} bgColor="white" bgClip="text" fontFamily="body" lineHeight={"28px"}>
+            ИГРАЙ ПО-НОВОМУ!
+          </Text>
+        </Box>
+      
       </HStack>
     </Container>
   );
