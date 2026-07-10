@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/RevizeMC/static/css/main.b7628af9.css",
-    "main.js": "/RevizeMC/static/js/main.07ad004a.js",
+    "main.css": "/RevizeMC/static/css/main.0939277b.css",
+    "main.js": "/RevizeMC/static/js/main.78a28dcd.js",
     "static/js/453.384949bf.chunk.js": "/RevizeMC/static/js/453.384949bf.chunk.js",
-    "static/media/dayssansblack.ttf": "/RevizeMC/static/media/dayssansblack.2cc5d9e524f1f780de22.ttf",
+    "static/media/DaysSansBlack.otf": "/RevizeMC/static/media/DaysSansBlack.8187e6467670bbe632ed.otf",
     "static/media/blueLogo.png": "/RevizeMC/static/media/blueLogo.62006a9fb6a81dcb891d.png",
     "index.html": "/RevizeMC/index.html",
-    "main.b7628af9.css.map": "/RevizeMC/static/css/main.b7628af9.css.map",
-    "main.07ad004a.js.map": "/RevizeMC/static/js/main.07ad004a.js.map",
+    "main.0939277b.css.map": "/RevizeMC/static/css/main.0939277b.css.map",
+    "main.78a28dcd.js.map": "/RevizeMC/static/js/main.78a28dcd.js.map",
     "453.384949bf.chunk.js.map": "/RevizeMC/static/js/453.384949bf.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.b7628af9.css",
-    "static/js/main.07ad004a.js"
+    "static/css/main.0939277b.css",
+    "static/js/main.78a28dcd.js"
   ]
 }
