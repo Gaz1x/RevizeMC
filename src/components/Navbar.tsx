@@ -46,13 +46,13 @@ export const Navbar = () => {
   return (
     <Container
       as="nav"
-      position="fixed"
+      // position="fixed"
       top="10px"
       
       // ИСПРАВЛЕНИЕ: Центрируем навбар
-      left="50%"
-      transform="translateX(-50%)"
-      
+      // left="50%"
+      // transform="translateX(-50%)"
+      mt={"30px"}
       zIndex="sticky"
       bg="whiteAlpha.50"
       backdropFilter="blur(12px)"

@@ -11,9 +11,11 @@ function App() {
   return (
     <ChakraProvider theme = {theme}>
       {/* Навигационная панель */}
-      <Navbar />
+      {/* <Navbar /> */}
 
       <Container minW="100%" centerContent bgGradient = "linear(to-tr, #005959, #284159)" bgAttachment="fixed">
+              <Navbar />
+
               {/* Основной контент страницы */}
               <BuyingZone />
               <RulesBlock />
