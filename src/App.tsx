@@ -10,11 +10,11 @@ import './dayssansblack.css';
 function App() {
   return (
     <ChakraProvider theme = {theme}>
-      {/* Основной контент страницы */}
+      {/* Навигационная панель */}
       <Navbar />
 
-      <Container minW="100%" centerContent bgGradient = "linear(to-tr, #005959, #284159)">
-             {/* Навигационная панель */}
+      <Container minW="100%" centerContent bgGradient = "linear(to-tr, #005959, #284159)" bgAttachment="fixed">
+              {/* Основной контент страницы */}
               <BuyingZone />
               <RulesBlock />
       </Container>

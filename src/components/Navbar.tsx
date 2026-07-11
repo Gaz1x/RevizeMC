@@ -61,7 +61,8 @@ export const Navbar = () => {
       borderRadius= {{xl : "38px", base: "26px"}}
       maxW="max-content"
       px={{xl: 4, base: "14px"}}
-      py={{xl: 4, base: "1px"}}
+      py={{xl: 4, base: "12px"}}
+      alignItems="center"
     >
       <HStack gap={3}>
         <Box w={{ xl: "70px", base: "45px" }} h={{ xl: "70px", base: "45px" }}>
@@ -74,33 +75,36 @@ export const Navbar = () => {
           />
         </Box>
 
-          <Text 
-            fontSize={{ xl: "60px", base: "30px" }}
-            bgColor="#80bFFF"
-            bgClip="text"
-            fontFamily="heading"
-            lineHeight={{ xl: "60px", base: "60px" }}
-            mb={{xl: "7px", base: "4px"}}
-            cursor="pointer"
-            onClick={handleCopy}
-            onMouseLeave={handleMouseLeave}
-
-            transition="all 0.45s ease-out"
-            sx={{
-              '@media (hover: hover) and (pointer: fine)': {
-                '&:hover': {
-                  bgColor: "#FFFFFF",
-                  transform: "scale(0.99)"
-                  
-                },
-                '&:active': { 
-                  transform: "scale(0.97)" 
-                }
+        <Text 
+          fontSize={{ xl: "60px", base: "30px" }}
+          bgColor="#80bFFF"
+          bgClip="text"
+          fontFamily="heading"
+          
+          // ИСПРАВЛЕНИЕ ЦЕНТРИРОВАНИЯ:
+          display="inline-flex"
+          alignItems="center"
+          justifyContent="center"
+          h={{ xl: "70px", base: "40px" }} // Выравниваем по высоте логотипа
+          
+          cursor="pointer"
+          onClick={handleCopy}
+          onMouseLeave={handleMouseLeave}
+          transition="all 0.45s ease-out"
+          sx={{
+            '@media (hover: hover) and (pointer: fine)': {
+              '&:hover': {
+                bgColor: "#FFFFFF",
+                transform: "scale(0.99)"
+              },
+              '&:active': { 
+                transform: "scale(0.97)" 
               }
-            }}
-            >
-            REVIZEMC.NET
-          </Text>
+            }
+          }}
+        >
+          REVIZEMC.NET
+        </Text>
        
         <Box
           border="6px solid #80bFFF"

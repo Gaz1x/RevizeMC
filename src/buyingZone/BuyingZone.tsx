@@ -11,8 +11,7 @@ import {
   Button,
   Input,
   Image,
-  Checkbox, 
-  transition
+  Checkbox
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
@@ -41,8 +40,12 @@ const POPULAR_DOMAINS = [
 
 export const BuyingZone = () => {
   const [tokens, setTokens] = useState<number>(1000);
-  const [indexes, setIndex] = useState<number>(TOKEN_OPTIONS.indexOf(1000));
   
+  // smoothValue хранит проценты (0-100)
+  const [smoothValue, setSmoothValue] = useState<number>(
+    (TOKEN_OPTIONS.indexOf(1000) / (TOKEN_OPTIONS.length - 1)) * 100
+  );
+
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const [ofertaAccepted, setOfertaAccepted] = useState(false);
 
@@ -138,6 +141,15 @@ export const BuyingZone = () => {
       },
     }
   });
+
+  const handleSliderChange = (val: number) => {
+    setSmoothValue(val);
+    
+    const maxIdx = TOKEN_OPTIONS.length - 1;
+    const targetIdx = Math.round((val / 100) * maxIdx);
+    
+    setTokens(TOKEN_OPTIONS[targetIdx]);
+  };
 
   return (
     <VStack
@@ -254,6 +266,7 @@ export const BuyingZone = () => {
                             '@media (hover: hover) and (pointer: fine)': {
                               '&:hover': {
                                 bgColor: "#FFFFFF",
+                                transform: "scale(0.99)"
                               }
                             }
                           }}
@@ -280,6 +293,7 @@ export const BuyingZone = () => {
                             '@media (hover: hover) and (pointer: fine)': {
                               '&:hover': {
                                 bgColor: "#FFFFFF",
+                                transform: "scale(0.99)"
                               }
                             }
                           }}>ПРАВИЛАМИ</Text>
@@ -288,7 +302,7 @@ export const BuyingZone = () => {
         </VStack>
       </Flex>
 
-      {/* ОБНОВЛЕННЫЙ БЛОК СЛАЙДЕРА */}
+      {/* БЛОК СЛАЙДЕРА БЕЗ КРИТИЧЕСКИХ ОШИБОК СБОРКИ */}
       <Box w="full" mt={0}>
         
         {/* Капсула-обертка для слайдера */}
@@ -299,68 +313,62 @@ export const BuyingZone = () => {
           borderWidth={{xl: "6px", base: "4px"}}
           borderRadius="20px" 
           bg="transparent" 
-          px="27px" 
+          px="30px" 
           display="flex"
           alignItems="center"
         >
           <Slider
             aria-label="token-slider"
-            value={indexes}
+            value={smoothValue}
             min={0}
-            max={TOKEN_OPTIONS.length - 1}
-            step={1}
-            onChange={(val) => { 
-              setIndex(val); 
-              setTokens(TOKEN_OPTIONS[val]);
-            }}
+            max={100}
+            step={0.1} 
+            onChange={handleSliderChange}
             focusThumbOnChange={false}
             w="full"
+            role="group" // Объявляем слайдер группой, чтобы внутренний Box знал, когда слайдер зажат
           >
-            <SliderTrack bg="transparent" h="full">
-              <SliderFilledTrack bg="transparent" /> 
+            <SliderTrack bg="transparent" h="10px">
+              <SliderFilledTrack bg="white" borderRadius="8px" /> 
             </SliderTrack>
             
-            {/* НЕВИДИМЫЙ КОНТЕЙНЕР БЕГУНКА */}
             <SliderThumb 
-              w={"38px"} 
-              h={"38px"} 
+              w="38px"
+              h="38px"
               bg="transparent" 
-              border="none" // На всякий случай обнуляем бордер
-              outline="none" // Убираем стандартную обводку браузера
-              
-              // Глобально убиваем черную обводку (focus-ring)
+              border="none"
+              outline="none"
               _focus={{ boxShadow: "none", outline: "none" }}
               _focusVisible={{ boxShadow: "none", outline: "none" }}
-              _active={{ boxShadow: "none", outline: "none" }}
-              
-              sx={{
-                '&:active .visual-thumb': {
-                  transform: "scale(0.89)",
-                  bg: "white", // Делаем бегунок белым при нажатии
-                  boxShadow: "none",
-                }
-              }}
             >
-              {/* ВИДИМАЯ ЧАСТЬ БЕГУНКА */}
               <Box
-                className="visual-thumb"
                 w="100%"
                 h="100%"
                 borderRadius="12px"
                 bg="#80bFFF"
-                // Изменили transition на "all", чтобы цвет тоже менялся плавно
-                transition="all 0.2s ease-in-out" 
+                transition="all 0.15s ease-in-out" 
+                
+                // Исправление анимаций и цвета на GitHub Pages/npm start:
+                // При наведении на слайдер или его перетаскивании (активное состояние группы)
+                _groupHover={{
+                  bg: "white",
+                  transform: "scale(0.85)"
+                }}
+                _groupActive={{
+                  bg: "white",
+                  transform: "scale(0.75)"
+                }}
               />
             </SliderThumb>
           </Slider>
         </Box>
 
-        <Flex w="full" justifyContent="space-between" mt={4}>
+        <Flex w="full" justifyContent="space-evenly" mt={4}>
           <HStack alignItems="center" p="0px">
-            <Text fontSize={{base:"lg", xl: "2xl"}} fontWeight="bold" fontFamily="heading" lineHeight="1ew" color="white">
+            <Text fontSize={{base:"lg", xl: "2xl"}} fontWeight="bold" fontFamily="heading" color="white">
                 {tokens < 1000 ? `${tokens}` : `${Math.trunc(tokens / 1000)} ${tokens / 1000 === Math.trunc(tokens / 1000) ? "000" : "500"}`}
             </Text>
-            <Box w={{xl:"30px", base: "25px"}} h={{xl:"30px", base: "25px"}}>
+            <Box w={"38px"} h={"38px"}>
                 <Image
                     src={token}
                     alt="Токен"
@@ -370,7 +378,7 @@ export const BuyingZone = () => {
                 />    
             </Box>
           </HStack>
-          <Text fontSize={{base:"lg", xl:"2xl"}} fontWeight="bold" fontFamily="heading" lineHeight="1ew" color="white">
+          <Text fontSize={{base:"lg", xl:"2xl"}} fontWeight="bold" fontFamily="heading" color="white">
             {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
           </Text>
         </Flex>
@@ -378,4 +386,4 @@ export const BuyingZone = () => {
 
     </VStack>
   );
-};  
+};

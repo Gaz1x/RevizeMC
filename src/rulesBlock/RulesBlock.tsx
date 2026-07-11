@@ -137,7 +137,8 @@ export const RulesBlock = () => {
                   transition="all 0.2s ease-out"
                   _hover={{
                     transform: "scale(0.99)",
-                    color: isActive ? "white" : "gray.200"
+                    // color: isActive ? "white" : "gray.200",
+                    borderColor: !isActive ? "white" : "transparent"
                   }}
                   _active={{
                     transform: "scale(0.97)"
@@ -188,7 +189,7 @@ export const RulesBlock = () => {
             <HStack spacing={{ base: 3, xl: 4 }} justify="center">
               <Button
                 as="a"
-                href="https://discord.gg/ваш_сервер"
+                href="https://discord.com/invite/SJpQDQcJvG"
                 target="_blank"
                 rel="noopener noreferrer"
                 bg="#80BFFF"
@@ -208,7 +209,7 @@ export const RulesBlock = () => {
 
               <Button
                 as="a"
-                href="https://t.me/ваш_канал"
+                href="https://t.me/revizemc"
                 target="_blank"
                 rel="noopener noreferrer"
                 bg="#80BFFF"
