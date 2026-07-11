@@ -12,13 +12,23 @@ function App() {
     <ChakraProvider theme = {theme}>
       {/* Навигационная панель */}
       {/* <Navbar /> */}
+      <Box
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          zIndex={-1}
+      />
 
-      <Container minW="100%" centerContent bgGradient = "linear(to-tr, #005959, #284159)" bgAttachment="fixed">
-              <Navbar />
+      <Container minW="100%" minH="100dvh" centerContent p={0} position="relative" zIndex={1} bgGradient="linear(to-b, #264059, #0d1a26)"
 
-              {/* Основной контент страницы */}
-              <BuyingZone />
-              <RulesBlock />
+>
+        <Navbar />
+
+        {/* Основной контент страницы */}
+        <BuyingZone />
+        <RulesBlock />
       </Container>
     </ChakraProvider>
   );

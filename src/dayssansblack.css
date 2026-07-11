@@ -1,5 +1,11 @@
+/* Шрифт со строчными буквами (для дизайна) */
 @font-face {
-	font-family: 'DaysSansBlack';
-  	src: url('./assets/DaysSansBlack.otf') format('truetype');
-  	/* src: url('./assets//dayssansblack.ttf') format('truetype'); */
+  font-family: 'DaysSansBlackDesign';
+  src: url('./assets/dayssansblack.ttf') format('truetype');
+}
+
+/* Шрифт только с заглавными буквами (для полей ввода) */
+@font-face {
+  font-family: 'DaysSansBlackCaps';
+  src: url('./assets/DaysSansBlack.otf') format('opentype');
 }

@@ -155,12 +155,13 @@ export const BuyingZone = () => {
     <VStack
       w="full"
       maxW={{xl: "1036px", base: "380px"}}
-      bg="transparent"
+      // bg="rgba(50, 75, 100, 0.5)"
+      bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
       border="solid #80BFFF"
       borderWidth={{xl: "6px", base: "4px"}}
       borderRadius="38px"
       p={{ base: 4, xl: 4 }}
-      mt={{ xl: "156px", base: "108px" }}
+      mt="30px"
       spacing={4}
       align="stretch"
       transition="all 0.45s ease-out"
@@ -184,13 +185,12 @@ export const BuyingZone = () => {
           <Input 
             bg="transparent" 
             color="white" 
-            placeholder="ПСЕВДОНИМ" 
+            placeholder="ПСЕвДОНИМ" 
             _placeholder={{ color: "gray.400" }}
             h="50px" 
             borderRadius="20px" 
             border="solid #80BFFF"
             borderWidth={{xl: "6px", base: "4px"}}
-            fontFamily="body"
             fontSize="lg"
             w="full"
             _hover={{ borderColor: "#80BFFF" }}
@@ -211,7 +211,6 @@ export const BuyingZone = () => {
             _placeholder={{ color: "gray.400" }}
             h="50px" 
             borderRadius="20px" 
-            fontFamily="body"
             fontSize="lg"
             w="full"
             _hover={{ borderColor: email.length > 0 && !isEmailValid ? "#FF8080" : "#80BFFF" }}
@@ -368,7 +367,7 @@ export const BuyingZone = () => {
             <Text fontSize={{base:"lg", xl: "2xl"}} fontWeight="bold" fontFamily="heading" color="white">
                 {tokens < 1000 ? `${tokens}` : `${Math.trunc(tokens / 1000)} ${tokens / 1000 === Math.trunc(tokens / 1000) ? "000" : "500"}`}
             </Text>
-            <Box w={"38px"} h={"38px"}>
+            <Box w={{xl: "36px", base: "27px"}} h={{xl: "36px", base: "27px"}}>
                 <Image
                     src={token}
                     alt="Токен"

@@ -91,12 +91,12 @@ export const RulesBlock = () => {
     <VStack
       w="full"
       maxW={{ xl: "1036px", base: "380px" }}
-      bg="transparent"
+      bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
       border="solid #80BFFF"
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="38px"
       p={{ base: 4, xl: 4 }}
-      mt={{ xl: "32px", base: "24px" }}
+      mt="30px"
       mb={{ xl: "100px", base: "60px" }}
       spacing={4}
       align="stretch"
@@ -168,7 +168,7 @@ export const RulesBlock = () => {
             {RULES_DATA[activeTab].content}
           </Box>
 
-          {/* Блок Технической поддержки */}
+          {/* Блок Технической поддержки
           <Box 
             border="solid #80BFFF" 
             borderWidth={{ xl: "6px", base: "4px" }}
@@ -176,7 +176,8 @@ export const RulesBlock = () => {
             p={{ base: 4, xl: 4 }}
           >
             <Text 
-              textAlign="center" 
+              textAlign="center"
+              bg="transparent"
               color="#80BFFF" 
               fontFamily="heading" 
               fontSize={{ base: "lg", xl: "2xl" }} 
@@ -227,7 +228,7 @@ export const RulesBlock = () => {
                 TELEGRAM
               </Button>
             </HStack>
-          </Box>
+          </Box> */}
 
         </Flex>
 

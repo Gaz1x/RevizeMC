@@ -1,7 +1,7 @@
 {
   "name": "RevizeMC",
   "version": "0.1.0",
-  "homepage": "https://Gaz1x.github.io/RevizeMC",
+  "homepage": "./",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^2.10.10",
