@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/RevizeMC/static/css/main.0939277b.css",
-    "main.js": "/RevizeMC/static/js/main.78a28dcd.js",
+    "main.js": "/RevizeMC/static/js/main.a68c694d.js",
     "static/js/453.384949bf.chunk.js": "/RevizeMC/static/js/453.384949bf.chunk.js",
     "static/media/DaysSansBlack.otf": "/RevizeMC/static/media/DaysSansBlack.8187e6467670bbe632ed.otf",
     "static/media/blueLogo.png": "/RevizeMC/static/media/blueLogo.62006a9fb6a81dcb891d.png",
     "index.html": "/RevizeMC/index.html",
     "main.0939277b.css.map": "/RevizeMC/static/css/main.0939277b.css.map",
-    "main.78a28dcd.js.map": "/RevizeMC/static/js/main.78a28dcd.js.map",
+    "main.a68c694d.js.map": "/RevizeMC/static/js/main.a68c694d.js.map",
     "453.384949bf.chunk.js.map": "/RevizeMC/static/js/453.384949bf.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.0939277b.css",
-    "static/js/main.78a28dcd.js"
+    "static/js/main.a68c694d.js"
   ]
 }
