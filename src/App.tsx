@@ -3,6 +3,8 @@ import { ChakraProvider, Container, Box} from '@chakra-ui/react';
 import { Navbar } from './components/Navbar';
 import { BuyingZone } from './buyingZone/BuyingZone';
 import { RulesBlock } from './rulesBlock/RulesBlock';
+import { SupportBlock} from './supportBlock/supportBlock';
+import { ServerOnlineBlock } from './onlineBlock/onlineBlock';
 
 import theme from './theme';
 import './dayssansblack.css';
@@ -29,6 +31,7 @@ function App() {
         {/* Основной контент страницы */}
         <BuyingZone />
         <RulesBlock />
+        <SupportBlock />
       </Container>
     </ChakraProvider>
   );
