@@ -1,18 +1,20 @@
 {
   "files": {
     "main.css": "./static/css/main.ec363e82.css",
-    "main.js": "./static/js/main.4f616f4f.js",
+    "main.js": "./static/js/main.e7c96219.js",
     "static/js/453.384949bf.chunk.js": "./static/js/453.384949bf.chunk.js",
     "static/media/DaysSansBlack.otf": "./static/media/DaysSansBlack.8187e6467670bbe632ed.otf",
     "static/media/dayssansblack.ttf": "./static/media/dayssansblack.2cc5d9e524f1f780de22.ttf",
-    "static/media/blueLogo.png": "./static/media/blueLogo.62006a9fb6a81dcb891d.png",
+    "static/media/logo1.png": "./static/media/logo1.9191699c131a0838f01c.png",
+    "static/media/buyingLogo.png": "./static/media/buyingLogo.14a40296b89acaa41b02.png",
+    "static/media/rulesLogo.png": "./static/media/rulesLogo.13608ee7525ad5434006.png",
     "index.html": "./index.html",
     "main.ec363e82.css.map": "./static/css/main.ec363e82.css.map",
-    "main.4f616f4f.js.map": "./static/js/main.4f616f4f.js.map",
+    "main.e7c96219.js.map": "./static/js/main.e7c96219.js.map",
     "453.384949bf.chunk.js.map": "./static/js/453.384949bf.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ec363e82.css",
-    "static/js/main.4f616f4f.js"
+    "static/js/main.e7c96219.js"
   ]
 }
