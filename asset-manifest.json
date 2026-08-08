@@ -1,20 +1,23 @@
 {
   "files": {
     "main.css": "./static/css/main.ec363e82.css",
-    "main.js": "./static/js/main.e7c96219.js",
+    "main.js": "./static/js/main.52b6c324.js",
     "static/js/453.384949bf.chunk.js": "./static/js/453.384949bf.chunk.js",
     "static/media/DaysSansBlack.otf": "./static/media/DaysSansBlack.8187e6467670bbe632ed.otf",
+    "static/media/greenToken.png": "./static/media/greenToken.2b30e992fb39a3bd0d5f.png",
+    "static/media/sponsorLogo.png": "./static/media/sponsorLogo.2417a738144003815f09.png",
+    "static/media/onlineLogo.png": "./static/media/onlineLogo.edde3b00abd27340966b.png",
+    "static/media/newRulesLogo.png": "./static/media/newRulesLogo.84a5667c9b9a7d1945a5.png",
     "static/media/dayssansblack.ttf": "./static/media/dayssansblack.2cc5d9e524f1f780de22.ttf",
     "static/media/logo1.png": "./static/media/logo1.9191699c131a0838f01c.png",
-    "static/media/buyingLogo.png": "./static/media/buyingLogo.14a40296b89acaa41b02.png",
-    "static/media/rulesLogo.png": "./static/media/rulesLogo.13608ee7525ad5434006.png",
+    "static/media/whiteTelegram.png": "./static/media/whiteTelegram.b8387b47fbe34e2fbb61.png",
     "index.html": "./index.html",
     "main.ec363e82.css.map": "./static/css/main.ec363e82.css.map",
-    "main.e7c96219.js.map": "./static/js/main.e7c96219.js.map",
+    "main.52b6c324.js.map": "./static/js/main.52b6c324.js.map",
     "453.384949bf.chunk.js.map": "./static/js/453.384949bf.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.ec363e82.css",
-    "static/js/main.e7c96219.js"
+    "static/js/main.52b6c324.js"
   ]
 }
