@@ -10,7 +10,7 @@ const theme = extendTheme({
       global: {
         'html': {
           // Устанавливаем базовый цвет для самого верха и низа окна (убирает белые полосы)
-          backgroundColor: '#1a2e42', 
+          backgroundColor: '#122130', 
         },
         'body': {
           // Прописываем градиент в синтаксисе стандартного CSS (to top right)

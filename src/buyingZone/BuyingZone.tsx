@@ -12,20 +12,19 @@ import {
   Input,
   Image,
   Checkbox,
-  SimpleGrid
+  SimpleGrid,
+  useBreakpointValue
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
 import token from './images/token.png';
-import buyingLogo from './images/buyingLogo.png';
+import buyingLogo from './images/greenToken.png';
 import ruble from './images/ruble.png';
 
 const TOKEN_OPTIONS = [
-  100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
-  1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000,
-  6000, 7000, 8000, 9000, 10000,
-  15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 
-  60000, 70000, 80000, 90000, 100000
+  1000, 2000, 3000, 4000, 5000,
+  10000, 20000, 30000, 40000, 50000,
+  100000, 200000, 300000, 400000, 500000
 ];
 
 const POPULAR_DOMAINS = [
@@ -46,7 +45,6 @@ export const BuyingZone = () => {
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
 
-  // Состояние для временной "вспышки" ошибок
   const [submitErrors, setSubmitErrors] = useState({
     nickname: false,
     email: false,
@@ -56,7 +54,7 @@ export const BuyingZone = () => {
 
   const [isFlashing, setIsFlashing] = useState(false);
   
-  const rubles = Math.max(0, tokens / 2 - 0.01);
+  const rubles = Math.max(0, tokens / 10 - 0.01);
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors(prev => ({ ...prev, nickname: false })); 
@@ -97,7 +95,6 @@ export const BuyingZone = () => {
   const isFormValid = rulesAccepted && ofertaAccepted && nickname.length >= 3 && isEmailValid;
 
 const handlePayClick = () => {
-    // 1. Если анимация ошибки уже идет — просто игнорируем новые клики
     if (isFlashing) return;
 
     const isNicknameError = nickname.length < 3;
@@ -105,22 +102,19 @@ const handlePayClick = () => {
     const isOfertaError = !ofertaAccepted;
     const isRulesError = !rulesAccepted;
 
-    // 2. Если всё правильно заполнено — пропускаем логику ошибок и идем к оплате
     if (!isNicknameError && !isEmailError && !isOfertaError && !isRulesError) {
       console.log("Оплата успешна!");
       return;
     }
 
-    // 3. Зажигаем красным те поля, где есть ошибка, и СТАВИМ БЛОКИРОВКУ
     setSubmitErrors({
       nickname: isNicknameError,
       email: isEmailError,
       oferta: isOfertaError,
       rules: isRulesError
     });
-    setIsFlashing(true); // Заблокировали кнопку
+    setIsFlashing(true);
 
-    // 4. Убираем красный цвет ровно через 1 секунду и СНИМАЕМ БЛОКИРОВКУ
     setTimeout(() => {
       setSubmitErrors({
         nickname: false,
@@ -137,15 +131,15 @@ const handlePayClick = () => {
 
   const getCheckboxStyles = (hasError: boolean) => ({
     '.chakra-checkbox__control': {
-      bg: '#1B2D3F',
+      bg: hasError ? "#592828" : '#285928',
       border: '3px solid',
-      borderColor: hasError ? '#FF8080' : '#80bFFF',
+      borderColor: hasError ? '#FF8080' : '#80ff80',
       borderRadius: '5px',
-      transition: "all 0.3s ease-in-out", // Плавный переход цвета
+      transition: "all 0.3s ease-in-out",
       'svg': { display: 'none' },
       _checked: {
-        bg: '#80bFFF',
-        borderColor: '#80bFFF',
+        bg: '#80ff80',
+        borderColor: '#80ff80',
         color: 'transparent',
         transform: "scale(1.2)"
       },
@@ -155,8 +149,8 @@ const handlePayClick = () => {
           borderColor: hasError ? '#FF8080' : '#FFFFFF',
         },
         '&[data-checked]:hover': {
-          borderColor: '#80bFFF',
-          bg: '#80bFFF',
+          borderColor: '#80ff80',
+          bg: '#80ff80',
         },
         '&:active': {
           bg: "transparent"
@@ -180,20 +174,22 @@ const handlePayClick = () => {
     }
   };
 
-  // Читаем состояния ошибок из объекта
   const ofertaError = submitErrors.oferta;
   const rulesError = submitErrors.rules;
   const nicknameError = submitErrors.nickname;
   const emailError = submitErrors.email;
 
+  const isDesktop = useBreakpointValue({ base: false, xl: true });
+  
+    
   return (
     <VStack
       w="full"
-      maxW={{xl: "1036px", base: "370px"}}
-      bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
-      border="solid #80BFFF"
+      maxW={{xl: "800px", base: "370px"}}
+      bgGradient="linear(to-t, transparent, rgba(128, 255, 128, 0.15))"
+      border="solid #80ff80"
       borderWidth={{xl: "6px", base: "4px"}}
-      borderRadius="30px"
+      borderRadius="25px"
       p={4}
       mt="15px"
       spacing={4}
@@ -205,7 +201,7 @@ const handlePayClick = () => {
         <Box w={{xl: "36px", base: "27px"}} h={{xl: "36px", base: "27px"}}>
           <Image src={buyingLogo} alt="Токен" fit="fill" draggable={false} userSelect="none" />    
         </Box>
-        <Text fontSize={{ base: "xl", xl: "3xl" }} fontFamily="heading" color="#80BFFF" lineHeight={"1"}>
+        <Text fontSize={{ base: "xl", xl: "3xl" }} fontFamily="heading" color="#80ff80" lineHeight={"1"}>
           ПОКУПКА ТОКЕНОВ
         </Text>
       </HStack>
@@ -214,37 +210,45 @@ const handlePayClick = () => {
         {/* Левая колонка */}
         <VStack flex="1" align="flex-start" spacing={3}>
           <Input 
-            bg="#1B2D3F" 
+            bg= {nicknameError ? "#592828" : "#285928"} 
             color="white" 
-            placeholder="ПСЕвДОНИМ" 
-            _placeholder={{ color: "#80BFFF" }}
+            placeholder="ПСЕВДОНИМ" 
+            // ИЗМЕНЕНИЕ: Меняем цвет плейсхолдера при ошибке
+            _placeholder={{ 
+              color: nicknameError ? "#FF8080" : "#80ff80", 
+              transition: "color 0.3s ease-in-out" 
+            }}
             h="50px" 
-            borderRadius="18px" 
+            borderRadius="15px" 
             border="solid" 
-            borderColor={nicknameError ? "#FF8080" : "#80BFFF"} 
+            borderColor={nicknameError ? "#FF8080" : "#80ff80"} 
             borderWidth={{xl: "6px", base: "4px"}}
             fontSize="lg" 
             w="full" 
-            transition="border-color 0.3s ease-in-out" // Плавное загорание и затухание
-            _hover={{ borderColor: nicknameError ? "#FF8080" : "#80BFFF" }} 
+            transition="all 0.3s ease-in-out" // Изменили с border-color на all
+            _hover={{ borderColor: nicknameError ? "#FF8080" : "#80ff80" }} 
             _focus={{ borderColor: "white", boxShadow: "none" }}
             value={nickname} 
             onChange={handleNicknameChange}
           />
           <Input 
-            bg="#1B2D3F" 
+            bg= {emailError ? "#592828" : "#285928"}  
             color="white" 
             placeholder="ПОЧТА" 
             border="solid"
-            borderColor={emailError ? "#FF8080" : "#80BFFF"}
+            borderColor={emailError ? "#FF8080" : "#80ff80"}
             borderWidth={{xl: "6px", base: "4px"}} 
-            _placeholder={{ color: "#80BFFF" }}
+            // ИЗМЕНЕНИЕ: Меняем цвет плейсхолдера при ошибке
+            _placeholder={{ 
+              color: emailError ? "#FF8080" : "#80ff80",
+              transition: "color 0.3s ease-in-out"
+            }}
             h="50px" 
-            borderRadius="18px" 
+            borderRadius="15px" 
             fontSize="lg" 
             w="full"
-            transition="border-color 0.3s ease-in-out" // Плавное загорание и затухание
-            _hover={{ borderColor: emailError ? "#FF8080" : "#80BFFF" }}
+            transition="all 0.3s ease-in-out" // Изменили с border-color на all
+            _hover={{ borderColor: emailError ? "#FF8080" : "#80ff80" }}
             _focus={{ borderColor: "white", boxShadow: "none" }}
             value={email} 
             onChange={handleEmailChange}
@@ -254,12 +258,12 @@ const handlePayClick = () => {
         {/* Правая колонка */}
         <VStack flex="1" align="flex-start" spacing={3}>
           <Button 
-            bg={"#80BFFF"} 
-            color={"#1B2D3F"} 
+            bg={"#80ff80"} 
+            color={"#285928"} 
             h="50px" 
-            borderRadius="18px"
+            borderRadius="15px"
             border="solid"
-            borderColor="#80BFFF"
+            borderColor="#80ff80"
             borderWidth={{xl: "6px", base: "4px"}}
             fontFamily="heading" 
             fontWeight="bold" 
@@ -269,10 +273,9 @@ const handlePayClick = () => {
             onClick={handlePayClick} 
             cursor={"pointer"}
             _hover={{ 
-              transform: "scale(0.99)", 
-              color: "white",
+              transform: "scale(0.96)"
             }}
-            _active={{ transform: "scale(0.97)" }}
+            _active={{ transform: "scale(0.9)" }}
           >
               {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} рублей
           </Button>
@@ -288,7 +291,11 @@ const handlePayClick = () => {
                 sx={getCheckboxStyles(ofertaError)} 
               />
               <Text 
-                color="white" 
+                // ИЗМЕНЕНИЕ: Меняем цвет текста при ошибке и добавляем анимацию
+                // color={ofertaError ? "#FF8080" : "white"}
+                // transition="color 0.3s ease-in-out"
+                color={"white"}
+
                 fontSize="sm" 
                 fontFamily="body" 
                 cursor="pointer" 
@@ -298,7 +305,7 @@ const handlePayClick = () => {
                   setSubmitErrors(prev => ({ ...prev, oferta: false }));
                 }} 
               >
-                СОГЛАСЕН С <Text as="span" bgColor="#80bFFF" bgClip="text" cursor="pointer" lineHeight={"1"}
+                СОГЛАСЕН С <Text as="span" bgColor="#80ff80" bgClip="text" cursor="pointer" lineHeight={"1"}
                             onClick={(e) => { e.stopPropagation(); }} transition="all 0.2s ease-out"
                             sx={{ '@media (hover: hover) and (pointer: fine)': { '&:hover': { bgColor: "#FFFFFF", transform: "scale(0.99)" } } }}>ДОГОВОРОМ</Text>
               </Text>
@@ -313,7 +320,10 @@ const handlePayClick = () => {
                 sx={getCheckboxStyles(rulesError)} 
               />
               <Text 
-                color="white" 
+                // ИЗМЕНЕНИЕ: Меняем цвет текста при ошибке и добавляем анимацию
+                // color={rulesError ? "#FF8080" : "white"}
+                // transition="color 0.3s ease-in-out"
+                color={"white"}
                 fontSize="sm" 
                 fontFamily="body" 
                 cursor="pointer" 
@@ -323,7 +333,7 @@ const handlePayClick = () => {
                   setSubmitErrors(prev => ({ ...prev, rules: false }));
                 }}
               >
-                СОГЛАСЕН С <Text as="span" bgColor="#80bFFF" bgClip="text" cursor="pointer" lineHeight={"1"}
+                СОГЛАСЕН С <Text as="span" bgColor="#80ff80" bgClip="text" cursor="pointer" lineHeight={"1"}
                             onClick={(e) => { e.stopPropagation(); }} transition="all 0.45s ease-out"
                             sx={{ '@media (hover: hover) and (pointer: fine)': { '&:hover': { bgColor: "#FFFFFF", transform: "scale(0.99)" } } }}>ПРАВИЛАМИ</Text>
               </Text>
@@ -337,9 +347,9 @@ const handlePayClick = () => {
         
         <Box 
           order={{ base: 2, xl: 1 }}
-          w="full" h={{xl :"50px", base: "46px"}} border="solid #80BFFF" borderWidth={{xl: "6px", base: "4px"}}
-          borderRadius="18px" bg="transparent" px="20px" display="flex" alignItems="center" overflow="hidden"
-          bgColor="#1B2D3F"
+          w="full" h={{xl :"50px", base: "46px"}} border="solid #80ff80" borderWidth={{xl: "6px", base: "4px"}}
+          borderRadius="15px" bg="transparent" px="20px" display="flex" alignItems="center" overflow="hidden"
+          bgColor="#285928"
         >
           <Slider
             aria-label="token-slider" value={smoothValue} min={0} max={100} step={0.1} 
@@ -360,7 +370,7 @@ const handlePayClick = () => {
               _active={{ boxShadow: "none !important", outline: "none !important" }}
               sx={{ WebkitTapHighlightColor: "transparent !important", outline: "none !important" }}
             >
-              <Box w="100%" h="100%" borderRadius="10px" bg="#80bFFF" transition="all 0.15s ease-in-out" 
+              <Box w="100%" h="100%" borderRadius="6px" bg="#80ff80" transition="all 0.15s ease-in-out" 
                 boxShadow="none !important" outline="none !important"
                 _groupHover={{ bg: "white", transform: "scale(0.85)" }}
                 _groupActive={{ bg: "white", transform: "scale(0.75)" }}
@@ -372,7 +382,7 @@ const handlePayClick = () => {
         {/* СЕТКА ИЗ 36 КНОПОК */}
         <SimpleGrid 
           order={{ base: 1, xl: 2 }}
-          columns={{ base: 6, xl: 12 }} 
+          columns={{ base: 5, xl: 5 }} 
           spacing={{ base: 1.5, xl: 2 }} 
           mt={{ base: 0, xl: 3 }}
           mb={{ base: 3, xl: 0 }}
@@ -380,26 +390,26 @@ const handlePayClick = () => {
         >
           {TOKEN_OPTIONS.map((val) => {
             const isActive = tokens === val; 
-            const displayVal = val >= 1000 ? `${val / 1000}К` : val;
             
+            const displayVal = isDesktop ? `${val / 1000} 000` : `${val / 1000}K`;
             return (
               <Button
                 key={val}
                 onClick={() => handleQuickSelect(val)}
-                bg={isActive ? "#80BFFF" : "#1B2D3F"}
-                color={isActive ? "#1B2D3F" : "white"}
-                border="solid #80BFFF"
+                bg={isActive ? "#80ff80" : "#285928"}
+                color={isActive ? "#285928" : "white"}
+                border="solid #80ff80"
                 borderWidth={{ xl: "6px", base: "4px" }} 
-                h={{ xl: "40px", base: "35px" }} 
-                borderRadius={{ xl: "12px", base: "8px" }}
+                h={{ xl: "50px", base: "35px" }} 
+                borderRadius={{ xl: "15px", base: "10px" }}
                 fontFamily="heading"
-                fontSize={{ xl: "13px", base: "10px" }} 
+                fontSize={{ xl: "16px", base: "10px" }} 
                 p={0}
                 transition="all 0.2s ease-out"
                 _hover={{
                   transform: "scale(0.92)",
                   borderColor: !isActive ? "white" : "transparent",
-                  color: !isActive ? "white" : "#1B2D3F"
+                  color: !isActive ? "white" : "#285928"
                 }}
                 _active={{
                   transform: "scale(0.85)"

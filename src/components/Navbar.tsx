@@ -1,62 +1,53 @@
-import { Image, Box, Text, HStack, Container, useClipboard, Collapse, ScaleFade, useBreakpointValue } from '@chakra-ui/react';
+import { Image, Box, Text, Flex, Container, useClipboard, useBreakpointValue, Button } from '@chakra-ui/react';
 import { useState } from 'react';
 import logo from "./images/logo1.png";
 
 export const Navbar = () => {
   const { onCopy } = useClipboard("revizemc.net");
   
-  // 1. Состояние для плавного раздвижения блоков (управление высотой)
-  const [showSpace, setShowSpace] = useState(false);
-  // 2. Состояние для плавного появления текста "СКОПИРОВАНО"
-  const [showText, setShowText] = useState(false);
-
   const [isAnimating, setIsAnimating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
-const handleCopy = () => {
+  const handleCopy = () => {
     if (!isDesktop || isAnimating) return;
     onCopy();
     
-    // ЭТАП 1: Начинаем обе анимации мгновенно и ОДНОВРЕМЕННО
     setIsAnimating(true);
-    setShowSpace(true);
-    setShowText(true);
+    setCopied(true);
 
-    // ЭТАП 2: Держим открытым 1.5 секунды (1500мс) и запускаем затухание текста
     setTimeout(() => {
-      setShowText(false);
-    }, 1000); // Можешь изменить время удержания по вкусу (например, 1000мс)
-
-    // ЭТАП 3: Ждем 300мс (пока текст растворится) и плавно схлопываем блоки
-    setTimeout(() => {
-      setShowSpace(false);
-    }, 1000); // Это значение должно быть на 300мс больше, чем предыдущее
+      setCopied(false);
+    }, 1500); 
 
     setTimeout(() => {
       setIsAnimating(false);
-    }, 1600);
-
+    }, 1800);
   };
 
   return (
-    <Box w="full" display="flex" flexDirection="column" alignItems="center" mb={showSpace ? "0px" : "15px"} transition="margin-bottom 0.6s cubic-bezier(0.4, 0, 0.2, 1)">
+    <Flex 
+      direction="column" 
+      alignItems="center" 
+      w="full"
+      maxW={{xl: "1300px", base: "370px"}}
+    >
       
-      {/* Навигационная панель */}
-      <Container
-        as="nav"
-        mt={"30px"}
-        bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
-        border="solid #80bFFF"
-        borderWidth={{ xl: "6px", base: "4px" }}
-        borderRadius={{ xl: "38px", base: "26px" }}
-        maxW="max-content"
-        px={{ xl: 4, base: "14px" }}
-        py={{ xl: 4, base: "12px" }}
+      {/* ВЕРХНИЙ РЯД */}
+      <Flex 
+        direction={"row"} 
         alignItems="center"
+        justifyContent="space-between" 
+        gap={{ base: 4, xl: 0 }} 
+        mt="15px" 
+        w="full"
       >
-        <HStack gap={3} align="center">
-          <Box w={{ xl: "70px", base: "45px" }} h={{ xl: "70px", base: "45px" }}>
+        
+        {/* ГРУППА 1: Логотип + Название (ЛЕВЫЙ КРАЙ) */}
+        <Flex direction="row" alignItems="center" gap={{ base: 2, xl: 3 }} flex={{ xl: 1 }} justify={{ base: "center", xl: "flex-start" }}>
+          
+          <Box w={{ xl: "64px", base: "45px" }} h={{ xl: "64px", base: "45px" }}>
             <Image
               src={logo}
               alt="Логотип"
@@ -66,90 +57,139 @@ const handleCopy = () => {
             />
           </Box>
 
-          <Text 
-            fontSize={{ xl: "60px", base: "30px" }}
-            bgColor="#80bFFF"
-            bgClip="text"
-            fontFamily="heading"
-            display="inline-flex"
-            lineHeight={{ xl: "60px", base: "30px" }}
+          <Container
+            as="nav"
+            role="group" 
+                          display={{ base: "none", xl: "flex" }}
+
+            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
+            border="solid #80bFFF"
+            borderWidth={{ xl: "6px", base: "4px" }}
+            borderRadius={{ xl: "14px", base: "26px" }}
+            w={{ xl: "320px", base: "240px" }} 
+            h={{ xl: "64px", base: "54px" }}
+            m={0} 
+            p={0} 
             alignItems="center"
             justifyContent="center"
+            position="relative" 
             cursor={isDesktop ? "pointer" : "default"}
             pointerEvents={isDesktop ? "auto" : "none"}
             onClick={handleCopy}
-            transition="all 0.2s ease-out"
+            transition="all 0.2s ease-in-out" 
             sx={{
               '@media (hover: hover) and (pointer: fine)': {
-                '&:hover': {
-                  bgColor: "#FFFFFF",
-                  transform: "scale(0.99)"
-                },
-                '&:active': { 
-                  transform: "scale(0.97)" 
-                }
+                '&:hover': { transform: "scale(0.96)", border: copied ? "solid #80BFFF 6px" : "solid white 6px" },
+                '&:active': { transform: "scale(0.9)" }
               }
             }}
           >
-            REVIZEMC.NET
-          </Text>
+            {/* Текст 1: REVIZEMC.NET */}
+            <Text 
+              position="absolute"
+              // Сжимаем до 0.7 при копировании и возвращаем к 1
+              transform={copied ? "scale(0.7)" : "scale(1)"}
+              opacity={copied ? 0 : 1} 
+              transition="all 0.3s ease-in-out" 
+              fontSize={{ xl: "30px", base: "26px" }} 
+              // Фиксируем белый цвет, если идет анимация
+              bgColor={"#FFFFFF"}
+              bgClip="text"
+              fontFamily="heading"
+              lineHeight="1"
+              _groupHover={{ bgColor: "#FFFFFF" }} 
+            >
+              REVIZEMC.NET
+            </Text>
 
+            {/* Текст 2: СКОПИРОВАНО */}
+            <Text 
+              position="absolute"
+              // Вырастает от 0.7 до 1 при появлении
+              transform={copied ? "scale(1)" : "scale(0.7)"}
+              opacity={copied ? 1 : 0} 
+              transition="all 0.3s ease-in-out"
+              fontSize={{ xl: "28px", base: "24px" }} 
+              // Тоже делаем белым для идеального наложения
+              bgColor={"#80bFFF"}
+              bgClip="text"
+              fontFamily="heading"
+              lineHeight="1"
+            >
+              СКОПИРОВАНО
+            </Text>
+          </Container>
+        </Flex>
+
+        {/* ГРУППА 2: СЛОГАН (СТРОГО ПО ЦЕНТРУ) */}
+        <Flex flex={{ xl: 1 }} justify="center" display={{ base: "none", xl: "flex" }}>
           <Box
-            border="6px solid #80bFFF"
-            borderRadius="25px"
-            py="14px"
-            px="14px"
-            display={{ xl: "block", base: "none" }}
-            bgColor="transparent"
+            border="solid #80bFFF"
+            borderWidth={{ xl: "6px", base: "4px" }}
+            borderRadius={{ xl: "14px", base: "26px" }}
+            h={{ xl: "64px", base: "54px" }}
+            m={0} 
+            alignItems="center"
+            justifyContent="center"
+            display="flex"
+            px={3}
           >
-            <Text fontSize={{ xl: "24px", base: "22px" }} bgColor="white" bgClip="text" fontFamily="body" lineHeight={"28px"}>
+            <Text 
+              fontSize="30px" 
+              fontWeight="bold" 
+              bgColor="#80bFFF" 
+              bgClip="text" 
+              fontFamily="body" 
+              lineHeight="1.2"
+            >
               ИГРАЙ ПО-НОВОМУ!
             </Text>
           </Box>
-        </HStack>
-      </Container>
-          
-        {/* РОДИТЕЛЬСКИЙ КОЛЛАПС */}
-        <Collapse 
-          in={showSpace} 
-          startingHeight={0}
-          endingHeight={60} // Увеличили высоту блока для воздуха (было 30)
-          transition={{ 
-            enter: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }, 
-            exit: { duration: 0.6, ease: [0.5, 0, 0.25, 1] } 
-          }}
-          style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
-        >
-          {/* Увеличили высоту контейнера до 60px и добавили mt="4px" для визуального баланса */}
-          <Box display="flex" justifyContent="center" alignItems="center" w="full" h="60px" mt="6px">
-            
-            <ScaleFade 
-              in={showText} 
-              initialScale={0.8}
-              transition={{ enter: { duration: 0.35 }, exit: { duration: 0.4 } }}
-            >
-              <Box
-                color="#80BFFF"
-                textAlign="center"
-                minW="260px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Text 
-                  fontSize="24px" 
-                  fontWeight="bold" 
-                  // letterSpacing="wide"
-                  lineHeight="1"
-                  
-                >
-                  СКОПИРОВАНО
-                </Text>
-              </Box>
-            </ScaleFade>
+        </Flex>
 
-          </Box>
-        </Collapse>
-    </Box>
+        {/* ГРУППА 3: КНОПКИ (ПРАВЫЙ КРАЙ) */}
+        <Flex direction="row" gap={{xl: 3, base: 6}} flex={{ xl: 1 }} justify={{ base: "center", xl: "flex-end" }}>
+          <Button
+            as="a"
+            href="https://discord.gg/SJpQDQcJvG" 
+            target="_blank"
+            w={{ base: "140px", xl: "192px" }} 
+            color="white"
+            bgColor="transparent"
+            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
+            border="solid #80bFFF"
+            borderWidth={{ xl: "6px", base: "4px" }}
+            borderRadius={{ xl: "14px", base: "12px" }} h={{ base: "45px", xl: "64px" }} 
+            fontFamily="heading" fontWeight="bold" fontSize={{ base: "14px", xl: "24px" }} 
+            transition="all 0.2s ease-out" cursor={"pointer"}
+            _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+            _active={{ transform: "scale(0.9)" }}
+          >
+            DISCORD
+          </Button>
+  
+          <Button
+            as="a"
+            href="https://t.me/revizemc" 
+            target="_blank"
+            w={{ base: "140px", xl: "192px" }}
+            color="white"
+            
+            bgColor="transparent"
+            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
+            border="solid #80bFFF"
+            borderWidth={{ xl: "6px", base: "4px" }}
+            borderRadius={{ xl: "14px", base: "12px" }} h={{ base: "45px", xl: "64px" }} 
+            fontFamily="heading" fontWeight="bold" fontSize={{ base: "14px", xl: "24px" }} 
+            transition="all 0.2s ease-out" cursor={"pointer"}
+            _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+            _active={{ transform: "scale(0.9)" }}
+          >
+            TELEGRAM
+          </Button>
+        </Flex>
+
+      </Flex>
+    </Flex>
   );
 };

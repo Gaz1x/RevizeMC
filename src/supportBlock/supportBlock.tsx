@@ -4,24 +4,40 @@ import {
   VStack,
   Button,
   SimpleGrid,
-  HStack
+  HStack,
+  Image,
+  Flex // <-- Убедись, что Flex импортирован
 } from '@chakra-ui/react';
+
+import image from "./images/supportLogo.png";
 
 export const SupportBlock = () => {
   return (
-    <VStack
+    <Flex // <-- Заменили HStack на Flex
+      direction={{ base: "column", xl: "row" }} // <-- МАГИЯ ЗДЕСЬ: колонка на мобилках, строка на ПК
       w="full"
-      maxW={{ xl: "518px", base: "370px" }}
+      maxW={{ xl: "1300px", base: "370px" }}
       bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
       border="solid #80BFFF"
       borderWidth={{ xl: "6px", base: "4px" }}
-      borderRadius="30px"
-      p={4} // Внутренние отступы
-      mt="30px"
-      spacing={3}
-      align="center" // Центрируем весь контент внутри
+      borderRadius="25px"
+      p={4} 
+      mt="15px"
+      gap={4}
+      justify={"space-between"}
       transition="all 0.45s ease-out"
     >
+      <HStack alignItems="center" p="0px">
+        <Box w={{xl: "36px", base: "27px"}} h={{xl: "36px", base: "27px"}}>
+            <Image
+              src={image}
+              alt="Логотип"
+              fit="fill"
+              draggable={false} 
+              userSelect="none"
+            />
+          </Box>
+
         <Text 
           fontSize={{ base: "xl", xl: "3xl" }} 
           fontFamily="heading" 
@@ -30,40 +46,46 @@ export const SupportBlock = () => {
         >
             ПОДДЕРЖКА
         </Text>
+      </HStack>
 
-      {/* Сетка кнопок: 1 колонка на мобилках, 2 колонки на ПК */}
-      <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={4} w="full" maxW="600px" mt={2}>
-        
-        {/* Кнопка DISCORD (Контурная) */}
+      {/* Правая часть: Сетка кнопок (1 колонка на мобилках, 2 колонки на ПК) */}
+      <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={4} w="full" maxW="1300px">
+              {/* Левая часть: Логотип и текст (всегда в строку) */}
+        {/* Кнопка DISCORD */}
         <Button
           as="a"
-          href="https://discord.gg/SJpQDQcJvG" // Замени на свою ссылку
+          href="https://discord.gg/SJpQDQcJvG" 
           target="_blank"
           w="full"
-            bg="#80bFFF" color="#1B2D3F" h="50px" borderRadius="18px"
-            fontFamily="heading" fontWeight="bold" fontSize="lg"
-            transition="all 0.2s ease-out" cursor={"pointer"}
-            _hover={{ transform: "scale(0.99)", color: "white" }}
-            _active={{ transform: "scale(0.97)" }}
+          bg="transparent" color="white" h="36px" borderRadius="10px"
+          border="#80BFFF solid"
+          borderWidth={{xl: "6px", base: "4px"}}
+          fontFamily="heading" fontWeight="bold" fontSize="lg"
+          transition="all 0.2s ease-out" cursor={"pointer"}
+          _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+          _active={{ transform: "scale(0.9)" }}
         >
           DISCORD
         </Button>
 
+        {/* Кнопка TELEGRAM */}
         <Button
           as="a"
-          href="https://t.me/revizemc" // Замени на свою ссылку
+          href="https://t.me/revizemc" 
           target="_blank"
-                    w="full"
-            bg="#80bFFF" color="#1B2D3F" h="50px" borderRadius="18px"
-            fontFamily="heading" fontWeight="bold" fontSize="lg"
-            transition="all 0.2s ease-out" cursor={"pointer"}
-            _hover={{ transform: "scale(0.99)", color: "white" }}
-            _active={{ transform: "scale(0.97)" }}
+          w="full"
+          bg="transparent" color="white" h="36px" borderRadius="10px"
+          border="#80BFFF solid"
+          borderWidth={{xl: "6px", base: "4px"}}
+          fontFamily="heading" fontWeight="bold" fontSize="lg"
+          transition="all 0.2s ease-out" cursor={"pointer"}
+          _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+          _active={{ transform: "scale(0.9)" }}
         >
           TELEGRAM
         </Button>
 
       </SimpleGrid>
-    </VStack>
+    </Flex>
   );
 };
