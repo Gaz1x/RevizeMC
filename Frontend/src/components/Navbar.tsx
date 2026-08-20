@@ -1,4 +1,13 @@
-import { Image, Box, Text, Flex, Container, useClipboard, useBreakpointValue, Button } from '@chakra-ui/react';
+import { 
+  Image, 
+  Box, 
+  Text, 
+  Flex, 
+  Container, 
+  useClipboard, 
+  useBreakpointValue, 
+  Button 
+} from '@chakra-ui/react';
 import { useState } from 'react';
 import logo from "./images/logo1.png";
 
@@ -12,8 +21,8 @@ export const Navbar = () => {
 
   const handleCopy = () => {
     if (!isDesktop || isAnimating) return;
-    onCopy();
     
+    onCopy();
     setIsAnimating(true);
     setCopied(true);
 
@@ -31,23 +40,30 @@ export const Navbar = () => {
       direction="column" 
       alignItems="center" 
       w="full"
-      maxW={{xl: "1300px", base: "370px"}}
+      maxW={{ xl: "1300px", base: "370px" }}
     >
-      
       {/* ВЕРХНИЙ РЯД */}
       <Flex 
-        direction={"row"} 
+        direction="row" 
         alignItems="center"
         justifyContent="space-between" 
         gap={{ base: 4, xl: 0 }} 
         mt="15px" 
         w="full"
       >
-        
         {/* ГРУППА 1: Логотип + Название (ЛЕВЫЙ КРАЙ) */}
-        <Flex direction="row" alignItems="center" gap={{ base: 2, xl: 3 }} flex={{ xl: 1 }} justify={{ base: "center", xl: "flex-start" }}>
-          
-          <Box w={{ xl: "64px", base: "45px" }} h={{ xl: "64px", base: "45px" }}>
+        <Flex 
+          direction="row" 
+          alignItems="center" 
+          gap={{ base: 2, xl: 3 }} 
+          flex={{ xl: 1 }} 
+          justify={{ base: "center", xl: "flex-start" }}
+        >
+          {/* Логотип */}
+          <Box 
+            w={{ xl: "64px", base: "45px" }} 
+            h={{ xl: "64px", base: "45px" }}
+          >
             <Image
               src={logo}
               alt="Логотип"
@@ -57,12 +73,11 @@ export const Navbar = () => {
             />
           </Box>
 
+          {/* Блок копирования IP */}
           <Container
             as="nav"
             role="group" 
-                          display={{ base: "none", xl: "flex" }}
-
-            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
+            display={{ base: "none", xl: "flex" }}
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
             borderRadius={{ xl: "14px", base: "26px" }}
@@ -79,21 +94,24 @@ export const Navbar = () => {
             transition="all 0.2s ease-in-out" 
             sx={{
               '@media (hover: hover) and (pointer: fine)': {
-                '&:hover': { transform: "scale(0.96)", border: copied ? "solid #80BFFF 6px" : "solid white 6px" },
-                '&:active': { transform: "scale(0.9)" }
+                '&:hover': { 
+                  transform: "scale(0.96)", 
+                  border: copied ? "solid #80BFFF 6px" : "solid white 6px" 
+                },
+                '&:active': { 
+                  transform: "scale(0.9)" 
+                }
               }
             }}
           >
             {/* Текст 1: REVIZEMC.NET */}
             <Text 
               position="absolute"
-              // Сжимаем до 0.7 при копировании и возвращаем к 1
               transform={copied ? "scale(0.7)" : "scale(1)"}
               opacity={copied ? 0 : 1} 
               transition="all 0.3s ease-in-out" 
               fontSize={{ xl: "30px", base: "26px" }} 
-              // Фиксируем белый цвет, если идет анимация
-              bgColor={"#FFFFFF"}
+              bgColor="#FFFFFF"
               bgClip="text"
               fontFamily="heading"
               lineHeight="1"
@@ -105,13 +123,11 @@ export const Navbar = () => {
             {/* Текст 2: СКОПИРОВАНО */}
             <Text 
               position="absolute"
-              // Вырастает от 0.7 до 1 при появлении
               transform={copied ? "scale(1)" : "scale(0.7)"}
               opacity={copied ? 1 : 0} 
               transition="all 0.3s ease-in-out"
               fontSize={{ xl: "28px", base: "24px" }} 
-              // Тоже делаем белым для идеального наложения
-              bgColor={"#80bFFF"}
+              bgColor="#80bFFF"
               bgClip="text"
               fontFamily="heading"
               lineHeight="1"
@@ -122,17 +138,21 @@ export const Navbar = () => {
         </Flex>
 
         {/* ГРУППА 2: СЛОГАН (СТРОГО ПО ЦЕНТРУ) */}
-        <Flex flex={{ xl: 1 }} justify="center" display={{ base: "none", xl: "flex" }}>
+        <Flex 
+          flex={{ xl: 1 }} 
+          justify="center" 
+          display={{ base: "none", xl: "flex" }}
+        >
           <Box
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
             borderRadius={{ xl: "14px", base: "26px" }}
             h={{ xl: "64px", base: "54px" }}
             m={0} 
+            px={3}
             alignItems="center"
             justifyContent="center"
             display="flex"
-            px={3}
           >
             <Text 
               fontSize="30px" 
@@ -147,41 +167,53 @@ export const Navbar = () => {
           </Box>
         </Flex>
 
-        {/* ГРУППА 3: КНОПКИ (ПРАВЫЙ КРАЙ) */}
-        <Flex direction="row" gap={{xl: 3, base: 6}} flex={{ xl: 1 }} justify={{ base: "center", xl: "flex-end" }}>
+        {/* ГРУППА 3: КНОПКИ СОЦСЕТЕЙ (ПРАВЫЙ КРАЙ) */}
+        <Flex 
+          direction="row" 
+          gap={{ xl: 3, base: 6 }} 
+          flex={{ xl: 1 }} 
+          justify={{ base: "center", xl: "flex-end" }}
+        >
+          {/* Кнопка DISCORD */}
           <Button
             as="a"
             href="https://discord.gg/SJpQDQcJvG" 
             target="_blank"
             w={{ base: "140px", xl: "192px" }} 
+            h={{ base: "45px", xl: "64px" }} 
             color="white"
             bgColor="transparent"
-            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
-            borderRadius={{ xl: "14px", base: "12px" }} h={{ base: "45px", xl: "64px" }} 
-            fontFamily="heading" fontWeight="bold" fontSize={{ base: "14px", xl: "24px" }} 
-            transition="all 0.2s ease-out" cursor={"pointer"}
+            borderRadius={{ xl: "14px", base: "12px" }} 
+            fontFamily="heading" 
+            fontWeight="bold" 
+            fontSize={{ base: "14px", xl: "24px" }} 
+            transition="all 0.2s ease-out" 
+            cursor="pointer"
             _hover={{ transform: "scale(0.96)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}
           >
             DISCORD
           </Button>
   
+          {/* Кнопка TELEGRAM */}
           <Button
             as="a"
             href="https://t.me/revizemc" 
             target="_blank"
             w={{ base: "140px", xl: "192px" }}
+            h={{ base: "45px", xl: "64px" }} 
             color="white"
-            
             bgColor="transparent"
-            // bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
-            borderRadius={{ xl: "14px", base: "12px" }} h={{ base: "45px", xl: "64px" }} 
-            fontFamily="heading" fontWeight="bold" fontSize={{ base: "14px", xl: "24px" }} 
-            transition="all 0.2s ease-out" cursor={"pointer"}
+            borderRadius={{ xl: "14px", base: "12px" }} 
+            fontFamily="heading" 
+            fontWeight="bold" 
+            fontSize={{ base: "14px", xl: "24px" }} 
+            transition="all 0.2s ease-out" 
+            cursor="pointer"
             _hover={{ transform: "scale(0.96)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}
           >

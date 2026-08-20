@@ -1,11 +1,11 @@
 /* Шрифт со строчными буквами (для дизайна) */
 @font-face {
   font-family: 'DaysSansBlackDesign';
-  src: url('./assets/dayssansblack.ttf') format('truetype');
+  src: url('./dayssansblack.ttf') format('truetype');
 }
 
 /* Шрифт только с заглавными буквами (для полей ввода) */
 @font-face {
   font-family: 'DaysSansBlackCaps';
-  src: url('./assets/DaysSansBlack.otf') format('opentype');
+  src: url('./DaysSansBlack.otf') format('opentype');
 }

@@ -17,9 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
-import token from './images/token.png';
 import buyingLogo from './images/greenToken.png';
-import ruble from './images/ruble.png';
 
 const TOKEN_OPTIONS = [
   1000, 2000, 3000, 4000, 5000,
@@ -33,6 +31,8 @@ const POPULAR_DOMAINS = [
 ];
 
 export const BuyingZone = () => {
+  
+  /* СОСТОЯНИЯ КОМПОНЕНТА */
   const [tokens, setTokens] = useState<number>(1000);
   
   const [smoothValue, setSmoothValue] = useState<number>(
@@ -54,14 +54,18 @@ export const BuyingZone = () => {
 
   const [isFlashing, setIsFlashing] = useState(false);
   
+  const isDesktop = useBreakpointValue({ base: false, xl: true });
+
   const rubles = Math.max(0, tokens / 10 - 0.01);
 
+  /* ЛОГИКА ВАЛИДАЦИИ И ОБРАБОТЧИКИ */
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors(prev => ({ ...prev, nickname: false })); 
     const value = e.target.value;
     const isValid = /^[a-zA-Z0-9_]*$/.test(value);
+    
     if (isValid && value.length <= 16) {
-        setNickname(value);
+      setNickname(value);
     }
   };
 
@@ -69,6 +73,7 @@ export const BuyingZone = () => {
     setSubmitErrors(prev => ({ ...prev, email: false }));
     const value = e.target.value;
     const validEmailChars = /^[a-zA-Z0-9._+@-]*$/;
+    
     if (!validEmailChars.test(value)) return;
 
     const parts = value.split('@');
@@ -92,9 +97,7 @@ export const BuyingZone = () => {
     !/[.\-_]$/.test(localPartFinal) && 
     POPULAR_DOMAINS.includes(domainFinal);
 
-  const isFormValid = rulesAccepted && ofertaAccepted && nickname.length >= 3 && isEmailValid;
-
-const handlePayClick = () => {
+  const handlePayClick = () => {
     if (isFlashing) return;
 
     const isNicknameError = nickname.length < 3;
@@ -113,6 +116,7 @@ const handlePayClick = () => {
       oferta: isOfertaError,
       rules: isRulesError
     });
+    
     setIsFlashing(true);
 
     setTimeout(() => {
@@ -126,38 +130,8 @@ const handlePayClick = () => {
 
     setTimeout(() => {
       setIsFlashing(false);
-    }, 600)
+    }, 600);
   };
-
-  const getCheckboxStyles = (hasError: boolean) => ({
-    '.chakra-checkbox__control': {
-      bg: hasError ? "#592828" : '#285928',
-      border: '3px solid',
-      borderColor: hasError ? '#FF8080' : '#80ff80',
-      borderRadius: '5px',
-      transition: "all 0.3s ease-in-out",
-      'svg': { display: 'none' },
-      _checked: {
-        bg: '#80ff80',
-        borderColor: '#80ff80',
-        color: 'transparent',
-        transform: "scale(1.2)"
-      },
-      _focus: { boxShadow: 'none' },
-      '@media (hover: hover) and (pointer: fine)': {
-        '&:hover': {
-          borderColor: hasError ? '#FF8080' : '#FFFFFF',
-        },
-        '&[data-checked]:hover': {
-          borderColor: '#80ff80',
-          bg: '#80ff80',
-        },
-        '&:active': {
-          bg: "transparent"
-        },
-      },
-    }
-  });
 
   const handleSliderChange = (val: number) => {
     setSmoothValue(val);
@@ -174,21 +148,51 @@ const handlePayClick = () => {
     }
   };
 
+  /* СТИЛИ */
+  const getCheckboxStyles = (hasError: boolean) => ({
+    '.chakra-checkbox__control': {
+      bg: hasError ? "#592828" : '#285928',
+      border: '3px solid',
+      borderColor: hasError ? '#FF8080' : '#80ff80',
+      borderRadius: '5px',
+      transition: "all 0.3s ease-in-out",
+      'svg': { display: 'none' },
+      _checked: {
+        bg: '#80ff80',
+        borderColor: '#80ff80',
+        color: 'transparent',
+        transform: "scale(1.2)"
+      },
+      _focus: { 
+        boxShadow: 'none' 
+      },
+      '@media (hover: hover) and (pointer: fine)': {
+        '&:hover': {
+          borderColor: hasError ? '#FF8080' : '#FFFFFF',
+        },
+        '&[data-checked]:hover': {
+          borderColor: '#80ff80',
+          bg: '#80ff80',
+        },
+        '&:active': {
+          bg: "transparent"
+        },
+      },
+    }
+  });
+
   const ofertaError = submitErrors.oferta;
   const rulesError = submitErrors.rules;
   const nicknameError = submitErrors.nickname;
   const emailError = submitErrors.email;
 
-  const isDesktop = useBreakpointValue({ base: false, xl: true });
-  
-    
   return (
     <VStack
       w="full"
-      maxW={{xl: "800px", base: "370px"}}
+      maxW={{ xl: "800px", base: "370px" }}
       bgGradient="linear(to-t, transparent, rgba(128, 255, 128, 0.15))"
       border="solid #80ff80"
-      borderWidth={{xl: "6px", base: "4px"}}
+      borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="25px"
       p={4}
       mt="15px"
@@ -197,189 +201,329 @@ const handlePayClick = () => {
       transition="all 0.45s ease-out"
       sx={{ WebkitTapHighlightColor: "transparent" }}
     >
-      <HStack alignItems="center" p="0px">
-        <Box w={{xl: "36px", base: "27px"}} h={{xl: "36px", base: "27px"}}>
-          <Image src={buyingLogo} alt="Токен" fit="fill" draggable={false} userSelect="none" />    
+      {/* ШАПКА БЛОКА */}
+      <HStack 
+        alignItems="center" 
+        p="0px"
+      >
+        <Box 
+          w={{ xl: "36px", base: "27px" }} 
+          h={{ xl: "36px", base: "27px" }}
+        >
+          <Image 
+            src={buyingLogo} 
+            alt="Токен" 
+            fit="fill" 
+            draggable={false} 
+            userSelect="none" 
+          />    
         </Box>
-        <Text fontSize={{ base: "xl", xl: "3xl" }} fontFamily="heading" color="#80ff80" lineHeight={"1"}>
+        <Text 
+          fontSize={{ base: "xl", xl: "3xl" }} 
+          fontFamily="heading" 
+          color="#80ff80" 
+          lineHeight="1"
+        >
           ПОКУПКА ТОКЕНОВ
         </Text>
       </HStack>
 
-      <Flex direction={{ base: "column", xl: "row" }} gap={4} w="full">
-        {/* Левая колонка */}
-        <VStack flex="1" align="flex-start" spacing={3}>
+      <Flex 
+        direction={{ base: "column", xl: "row" }} 
+        gap={4} 
+        w="full"
+      >
+        {/* ЛЕВАЯ КОЛОНКА (Инпуты) */}
+        <VStack 
+          flex="1" 
+          align="flex-start" 
+          spacing={3}
+        >
           <Input 
-            bg= {nicknameError ? "#592828" : "#285928"} 
+            bg={nicknameError ? "#592828" : "#285928"} 
             color="white" 
             placeholder="ПСЕВДОНИМ" 
-            // ИЗМЕНЕНИЕ: Меняем цвет плейсхолдера при ошибке
-            _placeholder={{ 
-              color: nicknameError ? "#FF8080" : "#80ff80", 
-              transition: "color 0.3s ease-in-out" 
-            }}
             h="50px" 
             borderRadius="15px" 
             border="solid" 
             borderColor={nicknameError ? "#FF8080" : "#80ff80"} 
-            borderWidth={{xl: "6px", base: "4px"}}
+            borderWidth={{ xl: "6px", base: "4px" }}
             fontSize="lg" 
             w="full" 
-            transition="all 0.3s ease-in-out" // Изменили с border-color на all
-            _hover={{ borderColor: nicknameError ? "#FF8080" : "#80ff80" }} 
-            _focus={{ borderColor: "white", boxShadow: "none" }}
+            transition="all 0.3s ease-in-out" 
             value={nickname} 
             onChange={handleNicknameChange}
+            _placeholder={{ 
+              color: nicknameError ? "#FF8080" : "#80ff80", 
+              transition: "color 0.3s ease-in-out" 
+            }}
+            _hover={{ 
+              borderColor: nicknameError ? "#FF8080" : "#80ff80" 
+            }} 
+            _focus={{ 
+              borderColor: "white", 
+              boxShadow: "none" 
+            }}
           />
           <Input 
-            bg= {emailError ? "#592828" : "#285928"}  
+            bg={emailError ? "#592828" : "#285928"}  
             color="white" 
             placeholder="ПОЧТА" 
             border="solid"
             borderColor={emailError ? "#FF8080" : "#80ff80"}
-            borderWidth={{xl: "6px", base: "4px"}} 
-            // ИЗМЕНЕНИЕ: Меняем цвет плейсхолдера при ошибке
-            _placeholder={{ 
-              color: emailError ? "#FF8080" : "#80ff80",
-              transition: "color 0.3s ease-in-out"
-            }}
+            borderWidth={{ xl: "6px", base: "4px" }} 
             h="50px" 
             borderRadius="15px" 
             fontSize="lg" 
             w="full"
-            transition="all 0.3s ease-in-out" // Изменили с border-color на all
-            _hover={{ borderColor: emailError ? "#FF8080" : "#80ff80" }}
-            _focus={{ borderColor: "white", boxShadow: "none" }}
+            transition="all 0.3s ease-in-out"
             value={email} 
             onChange={handleEmailChange}
+            _placeholder={{ 
+              color: emailError ? "#FF8080" : "#80ff80",
+              transition: "color 0.3s ease-in-out"
+            }}
+            _hover={{ 
+              borderColor: emailError ? "#FF8080" : "#80ff80" 
+            }}
+            _focus={{ 
+              borderColor: "white", 
+              boxShadow: "none" 
+            }}
           />
         </VStack>
 
-        {/* Правая колонка */}
-        <VStack flex="1" align="flex-start" spacing={3}>
+        {/* ПРАВАЯ КОЛОНКА (Кнопка оплаты и соглашения) */}
+        <VStack 
+          flex="1" 
+          align="flex-start" 
+          spacing={3}
+        >
           <Button 
-            bg={"#80ff80"} 
-            color={"#285928"} 
+            bg="#80ff80" 
+            color="#285928" 
             h="50px" 
             borderRadius="15px"
             border="solid"
             borderColor="#80ff80"
-            borderWidth={{xl: "6px", base: "4px"}}
+            borderWidth={{ xl: "6px", base: "4px" }}
             fontFamily="heading" 
             fontWeight="bold" 
             fontSize="lg" 
             w="full"
             transition="all 0.2s ease-out" 
+            cursor="pointer"
             onClick={handlePayClick} 
-            cursor={"pointer"}
             _hover={{ 
               transform: "scale(0.96)"
             }}
-            _active={{ transform: "scale(0.9)" }}
+            _active={{ 
+              transform: "scale(0.9)" 
+            }}
           >
-              {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} рублей
+            {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} рублей
           </Button>
           
-          <VStack spacing={3} mt={"3px"}>
-            <HStack spacing={3}>
+          <VStack 
+            spacing={3} 
+            mt="3px"
+          >
+            <HStack 
+              spacing={3}
+            >
               <Checkbox 
                 isChecked={ofertaAccepted} 
+                sx={getCheckboxStyles(ofertaError)} 
                 onChange={(e) => {
                   setOfertaAccepted(e.target.checked);
                   setSubmitErrors(prev => ({ ...prev, oferta: false }));
                 }} 
-                sx={getCheckboxStyles(ofertaError)} 
               />
               <Text 
-                // ИЗМЕНЕНИЕ: Меняем цвет текста при ошибке и добавляем анимацию
-                // color={ofertaError ? "#FF8080" : "white"}
-                // transition="color 0.3s ease-in-out"
-                color={"white"}
-
+                color="white"
                 fontSize="sm" 
                 fontFamily="body" 
                 cursor="pointer" 
-                lineHeight={"1"}
+                lineHeight="1"
                 onClick={() => {
                   setOfertaAccepted(!ofertaAccepted);
                   setSubmitErrors(prev => ({ ...prev, oferta: false }));
                 }} 
               >
-                СОГЛАСЕН С <Text as="span" bgColor="#80ff80" bgClip="text" cursor="pointer" lineHeight={"1"}
-                            onClick={(e) => { e.stopPropagation(); }} transition="all 0.2s ease-out"
-                            sx={{ '@media (hover: hover) and (pointer: fine)': { '&:hover': { bgColor: "#FFFFFF", transform: "scale(0.99)" } } }}>ДОГОВОРОМ</Text>
+                СОГЛАСЕН С 
+                <Text 
+                  as="span" 
+                  bgColor="#80ff80" 
+                  bgClip="text" 
+                  cursor="pointer" 
+                  lineHeight="1"
+                  transition="all 0.2s ease-out"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                  }} 
+                  sx={{ 
+                    '@media (hover: hover) and (pointer: fine)': { 
+                      '&:hover': { 
+                        bgColor: "#FFFFFF", 
+                        transform: "scale(0.99)" 
+                      } 
+                    } 
+                  }}
+                >
+                  {' ДОГОВОРОМ'}
+                </Text>
               </Text>
             </HStack>
-            <HStack spacing={3}>
+
+            <HStack 
+              spacing={3}
+            >
               <Checkbox 
                 isChecked={rulesAccepted} 
+                sx={getCheckboxStyles(rulesError)} 
                 onChange={(e) => {
                   setRulesAccepted(e.target.checked);
                   setSubmitErrors(prev => ({ ...prev, rules: false }));
                 }} 
-                sx={getCheckboxStyles(rulesError)} 
               />
               <Text 
-                // ИЗМЕНЕНИЕ: Меняем цвет текста при ошибке и добавляем анимацию
-                // color={rulesError ? "#FF8080" : "white"}
-                // transition="color 0.3s ease-in-out"
-                color={"white"}
+                color="white"
                 fontSize="sm" 
                 fontFamily="body" 
                 cursor="pointer" 
-                lineHeight={"1"} 
+                lineHeight="1" 
                 onClick={() => {
                   setRulesAccepted(!rulesAccepted);
                   setSubmitErrors(prev => ({ ...prev, rules: false }));
                 }}
               >
-                СОГЛАСЕН С <Text as="span" bgColor="#80ff80" bgClip="text" cursor="pointer" lineHeight={"1"}
-                            onClick={(e) => { e.stopPropagation(); }} transition="all 0.45s ease-out"
-                            sx={{ '@media (hover: hover) and (pointer: fine)': { '&:hover': { bgColor: "#FFFFFF", transform: "scale(0.99)" } } }}>ПРАВИЛАМИ</Text>
+                СОГЛАСЕН С 
+                <Text 
+                  as="span" 
+                  bgColor="#80ff80" 
+                  bgClip="text" 
+                  cursor="pointer" 
+                  lineHeight="1"
+                  transition="all 0.45s ease-out"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                  }} 
+                  sx={{ 
+                    '@media (hover: hover) and (pointer: fine)': { 
+                      '&:hover': { 
+                        bgColor: "#FFFFFF", 
+                        transform: "scale(0.99)" 
+                      } 
+                    } 
+                  }}
+                >
+                  {' ПРАВИЛАМИ'}
+                </Text>
               </Text>
             </HStack>
           </VStack>
         </VStack>
       </Flex>
 
-      {/* БЛОК СЛАЙДЕРА И КНОПОК */}
-      <Flex direction="column" w="full" mt="-5px">
-        
+      {/* БЛОК СЛАЙДЕРА И КНОПОК БЫСТРОГО ВЫБОРА */}
+      <Flex 
+        direction="column" 
+        w="full" 
+        mt="-5px"
+      >
         <Box 
           order={{ base: 2, xl: 1 }}
-          w="full" h={{xl :"50px", base: "46px"}} border="solid #80ff80" borderWidth={{xl: "6px", base: "4px"}}
-          borderRadius="15px" bg="transparent" px="20px" display="flex" alignItems="center" overflow="hidden"
+          w="full" 
+          h={{ xl: "50px", base: "46px" }} 
+          border="solid #80ff80" 
+          borderWidth={{ xl: "6px", base: "4px" }}
+          borderRadius="15px" 
+          bg="transparent" 
+          px="20px" 
+          display="flex" 
+          alignItems="center" 
+          overflow="hidden"
           bgColor="#285928"
         >
           <Slider
-            aria-label="token-slider" value={smoothValue} min={0} max={100} step={0.1} 
-            onChange={handleSliderChange} focusThumbOnChange={false} w="full" role="group"
+            aria-label="token-slider" 
+            value={smoothValue} 
+            min={0} 
+            max={100} 
+            step={0.1} 
+            focusThumbOnChange={false} 
+            w="full" 
+            role="group"
+            onChange={handleSliderChange} 
             sx={{
-              WebkitTapHighlightColor: "transparent !important", WebkitUserSelect: "none !important",
-              userSelect: "none !important", outline: "none !important", boxShadow: "none !important",
-              '.chakra-slider__track': { overflow: 'visible !important', bg: 'transparent !important' }
+              WebkitTapHighlightColor: "transparent !important", 
+              WebkitUserSelect: "none !important",
+              userSelect: "none !important", 
+              outline: "none !important", 
+              boxShadow: "none !important",
+              '.chakra-slider__track': { 
+                overflow: 'visible !important', 
+                bg: 'transparent !important' 
+              }
             }}
           >
-            <SliderTrack bg="transparent" h="12px">
-              <SliderFilledTrack ml="-10px" bg="white" borderLeftRadius="4px" borderRightRadius="0px" /> 
+            <SliderTrack 
+              bg="transparent" 
+              h="12px"
+            >
+              <SliderFilledTrack 
+                ml="-10px" 
+                bg="white" 
+                borderLeftRadius="4px" 
+                borderRightRadius="0px" 
+              /> 
             </SliderTrack>
             <SliderThumb 
-              w="30px" h="30px" bg="transparent" border="none" outline="none" boxShadow="none !important"
-              _focus={{ boxShadow: "none !important", outline: "none !important" }}
-              _focusVisible={{ boxShadow: "none !important", outline: "none !important" }}
-              _active={{ boxShadow: "none !important", outline: "none !important" }}
-              sx={{ WebkitTapHighlightColor: "transparent !important", outline: "none !important" }}
+              w="30px" 
+              h="30px" 
+              bg="transparent" 
+              border="none" 
+              outline="none" 
+              boxShadow="none !important"
+              _focus={{ 
+                boxShadow: "none !important", 
+                outline: "none !important" 
+              }}
+              _focusVisible={{ 
+                boxShadow: "none !important", 
+                outline: "none !important" 
+              }}
+              _active={{ 
+                boxShadow: "none !important", 
+                outline: "none !important" 
+              }}
+              sx={{ 
+                WebkitTapHighlightColor: "transparent !important", 
+                outline: "none !important" 
+              }}
             >
-              <Box w="100%" h="100%" borderRadius="6px" bg="#80ff80" transition="all 0.15s ease-in-out" 
-                boxShadow="none !important" outline="none !important"
-                _groupHover={{ bg: "white", transform: "scale(0.85)" }}
-                _groupActive={{ bg: "white", transform: "scale(0.75)" }}
+              <Box 
+                w="100%" 
+                h="100%" 
+                borderRadius="6px" 
+                bg="#80ff80" 
+                transition="all 0.15s ease-in-out" 
+                boxShadow="none !important" 
+                outline="none !important"
+                _groupHover={{ 
+                  bg: "white", 
+                  transform: "scale(0.85)" 
+                }}
+                _groupActive={{ 
+                  bg: "white", 
+                  transform: "scale(0.75)" 
+                }}
               />
             </SliderThumb>
           </Slider>
         </Box>
 
-        {/* СЕТКА ИЗ 36 КНОПОК */}
+        {/* СЕТКА ИЗ 15 КНОПОК */}
         <SimpleGrid 
           order={{ base: 1, xl: 2 }}
           columns={{ base: 5, xl: 5 }} 
@@ -390,12 +534,11 @@ const handlePayClick = () => {
         >
           {TOKEN_OPTIONS.map((val) => {
             const isActive = tokens === val; 
-            
             const displayVal = isDesktop ? `${val / 1000} 000` : `${val / 1000}K`;
+            
             return (
               <Button
                 key={val}
-                onClick={() => handleQuickSelect(val)}
                 bg={isActive ? "#80ff80" : "#285928"}
                 color={isActive ? "#285928" : "white"}
                 border="solid #80ff80"
@@ -406,6 +549,7 @@ const handlePayClick = () => {
                 fontSize={{ xl: "16px", base: "10px" }} 
                 p={0}
                 transition="all 0.2s ease-out"
+                onClick={() => handleQuickSelect(val)}
                 _hover={{
                   transform: "scale(0.92)",
                   borderColor: !isActive ? "white" : "transparent",
@@ -415,7 +559,11 @@ const handlePayClick = () => {
                   transform: "scale(0.85)"
                 }}
               >
-                <Text lineHeight="1">{displayVal}</Text>
+                <Text 
+                  lineHeight="1"
+                >
+                  {displayVal}
+                </Text>
               </Button>
             );
           })}
