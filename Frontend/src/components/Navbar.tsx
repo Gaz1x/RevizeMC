@@ -47,7 +47,7 @@ export const Navbar = () => {
         direction="row" 
         alignItems="center"
         justifyContent="space-between" 
-        gap={{ base: 4, xl: 0 }} 
+        gap={0} 
         mt="15px" 
         w="full"
       >
@@ -55,7 +55,7 @@ export const Navbar = () => {
         <Flex 
           direction="row" 
           alignItems="center" 
-          gap={{ base: 2, xl: 3 }} 
+          gap={{ base: "15px", xl: 3 }} 
           flex={{ xl: 1 }} 
           justify={{ base: "center", xl: "flex-start" }}
         >
@@ -77,14 +77,14 @@ export const Navbar = () => {
           <Container
             as="nav"
             role="group" 
-            display={{ base: "none", xl: "flex" }}
+            display={"flex"}
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
-            borderRadius={{ xl: "14px", base: "26px" }}
-            w={{ xl: "320px", base: "240px" }} 
-            h={{ xl: "64px", base: "54px" }}
+            borderRadius={{ xl: "14px", base: "12px" }}
+            w={{ xl: "320px", base: "310px" }} 
+            h={{ xl: "64px", base: "45px" }}
             m={0} 
-            p={0} 
+            p={0}
             alignItems="center"
             justifyContent="center"
             position="relative" 
@@ -110,8 +110,8 @@ export const Navbar = () => {
               transform={copied ? "scale(0.7)" : "scale(1)"}
               opacity={copied ? 0 : 1} 
               transition="all 0.3s ease-in-out" 
-              fontSize={{ xl: "30px", base: "26px" }} 
-              bgColor="#FFFFFF"
+              fontSize={{ xl: "30px", base: "28px" }} 
+              bgColor={{xl: "#FFFFFF", base: "#80bfff"}}
               bgClip="text"
               fontFamily="heading"
               lineHeight="1"
@@ -173,6 +173,7 @@ export const Navbar = () => {
           gap={{ xl: 3, base: 6 }} 
           flex={{ xl: 1 }} 
           justify={{ base: "center", xl: "flex-end" }}
+          display={{ base: "none", xl: "flex" }}
         >
           {/* Кнопка DISCORD */}
           <Button

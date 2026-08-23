@@ -31,19 +31,21 @@ const POPULAR_DOMAINS = [
 ];
 
 export const BuyingZone = () => {
-  
+
   /* СОСТОЯНИЯ КОМПОНЕНТА */
   const [tokens, setTokens] = useState<number>(1000);
-  
+
   const [smoothValue, setSmoothValue] = useState<number>(
     (TOKEN_OPTIONS.indexOf(1000) / (TOKEN_OPTIONS.length - 1)) * 100
   );
 
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const [ofertaAccepted, setOfertaAccepted] = useState(false);
-  
+
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
+  
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [submitErrors, setSubmitErrors] = useState({
     nickname: false,
@@ -53,7 +55,7 @@ export const BuyingZone = () => {
   });
 
   const [isFlashing, setIsFlashing] = useState(false);
-  
+
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
   const rubles = Math.max(0, tokens / 10 - 0.01);
@@ -63,7 +65,7 @@ export const BuyingZone = () => {
     setSubmitErrors(prev => ({ ...prev, nickname: false })); 
     const value = e.target.value;
     const isValid = /^[a-zA-Z0-9_]*$/.test(value);
-    
+
     if (isValid && value.length <= 16) {
       setNickname(value);
     }
@@ -73,7 +75,7 @@ export const BuyingZone = () => {
     setSubmitErrors(prev => ({ ...prev, email: false }));
     const value = e.target.value;
     const validEmailChars = /^[a-zA-Z0-9._+@-]*$/;
-    
+
     if (!validEmailChars.test(value)) return;
 
     const parts = value.split('@');
@@ -97,40 +99,103 @@ export const BuyingZone = () => {
     !/[.\-_]$/.test(localPartFinal) && 
     POPULAR_DOMAINS.includes(domainFinal);
 
-  const handlePayClick = () => {
-    if (isFlashing) return;
+  const handlePayClick = async () => {
+    if (isFlashing || isProcessing) return;
+    setIsProcessing(true);
 
-    const isNicknameError = nickname.length < 3;
+    const isNicknameLocalError = nickname.length < 3;
     const isEmailError = !isEmailValid;
     const isOfertaError = !ofertaAccepted;
     const isRulesError = !rulesAccepted;
 
-    if (!isNicknameError && !isEmailError && !isOfertaError && !isRulesError) {
-      console.log("Оплата успешна!");
-      return;
+    let isNicknameServerError = false;
+
+    // Шаг 1: Если длина ника корректна, проверяем его на сервере (заходил ли игрок)
+    if (!isNicknameLocalError) {
+      try {
+        const checkRes = await fetch(`http://192.168.0.9:5000/api/check-player/${nickname}`);
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          // Если сервер сказал, что игрока нет (exists: false) -> это ошибка
+          if (!checkData.exists) {
+            isNicknameServerError = true;
+          }
+        } else {
+          isNicknameServerError = true;
+        }
+      } catch (error) {
+        console.error("Ошибка проверки ника:", error);
+        isNicknameServerError = true;
+      }
     }
 
-    setSubmitErrors({
-      nickname: isNicknameError,
-      email: isEmailError,
-      oferta: isOfertaError,
-      rules: isRulesError
-    });
-    
-    setIsFlashing(true);
+    const finalNicknameError = isNicknameLocalError || isNicknameServerError;
 
-    setTimeout(() => {
+    // Шаг 2: Если есть ХОТЯ БЫ ОДНА ошибка (серверная или локальная) - мигаем красным
+    if (finalNicknameError || isEmailError || isOfertaError || isRulesError) {
       setSubmitErrors({
-        nickname: false,
-        email: false,
-        oferta: false,
-        rules: false
+        nickname: finalNicknameError,
+        email: isEmailError,
+        oferta: isOfertaError,
+        rules: isRulesError
       });
-    }, 300);
 
-    setTimeout(() => {
-      setIsFlashing(false);
-    }, 600);
+      setIsFlashing(true);
+
+      setTimeout(() => {
+        setSubmitErrors({ nickname: false, email: false, oferta: false, rules: false });
+      }, 300);
+
+      setTimeout(() => {
+        setIsFlashing(false);
+      }, 600);
+
+      setIsProcessing(false);
+      return; // Останавливаем выполнение, оплату не проводим
+    }
+
+    // Шаг 3: Если ошибок нет вообще, делаем запрос на покупку!
+    try {
+      const purchaseRes = await fetch('http://192.168.0.9:5000/api/purchase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname: nickname,
+          tokens: tokens
+        }),
+      });
+
+      if (purchaseRes.ok) {
+        console.log("Оплата успешно инициирована!");
+        
+        // --- ОЧИСТКА ПОЛЕЙ ПОСЛЕ УСПЕХА ---
+        setNickname("");
+        setEmail("");
+        setOfertaAccepted(false);
+        setRulesAccepted(false);
+        setTokens(1000);
+        setSmoothValue((TOKEN_OPTIONS.indexOf(1000) / (TOKEN_OPTIONS.length - 1)) * 100);
+        // ----------------------------------
+
+        // В будущем тут будет редирект на платежную кассу
+      } else {
+        // Если при покупке всё же произошел сбой, подсветим ник
+        setSubmitErrors(prev => ({ ...prev, nickname: true }));
+        setIsFlashing(true);
+        setTimeout(() => setSubmitErrors(prev => ({ ...prev, nickname: false })), 300);
+        setTimeout(() => setIsFlashing(false), 600);
+      }
+    } catch (error) {
+      console.error("Сбой оплаты:", error);
+      setSubmitErrors(prev => ({ ...prev, nickname: true }));
+      setIsFlashing(true);
+      setTimeout(() => setSubmitErrors(prev => ({ ...prev, nickname: false })), 300);
+      setTimeout(() => setIsFlashing(false), 600);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleSliderChange = (val: number) => {
@@ -313,6 +378,8 @@ export const BuyingZone = () => {
             w="full"
             transition="all 0.2s ease-out" 
             cursor="pointer"
+            isLoading={isProcessing}
+            loadingText="ОЖИДАНИЕ..."
             onClick={handlePayClick} 
             _hover={{ 
               transform: "scale(0.96)"
@@ -323,7 +390,7 @@ export const BuyingZone = () => {
           >
             {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} рублей
           </Button>
-          
+
           <VStack 
             spacing={3} 
             mt="3px"
@@ -535,7 +602,7 @@ export const BuyingZone = () => {
           {TOKEN_OPTIONS.map((val) => {
             const isActive = tokens === val; 
             const displayVal = isDesktop ? `${val / 1000} 000` : `${val / 1000}K`;
-            
+
             return (
               <Button
                 key={val}

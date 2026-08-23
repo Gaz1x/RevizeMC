@@ -81,7 +81,7 @@ export const Footer = () => {
           {/* СТРОКА 1 */}
           <Flex h={{ xl: "40px", base: "auto" }} align="center">
             <Text 
-              fontSize={{ base: "19px", xl: "23px" }} 
+              fontSize={{ base: "19px", xl: "20.5px" }} 
               fontFamily="heading" 
               color="whiteAlpha.800" 
               lineHeight="1"

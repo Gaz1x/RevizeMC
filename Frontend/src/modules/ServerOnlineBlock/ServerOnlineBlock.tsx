@@ -5,48 +5,92 @@ import {
   HStack, 
   Flex, 
   SimpleGrid, 
-  Image 
+  Image,
+  useBreakpointValue
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 
-import onlineLogo from './images/onlineLogo.png'; 
+import onlineLogo from './images/onlineLogoNew.png'; 
 
-/* ВРЕМЕННЫЕ ДАННЫЕ */
-const MOCK_SERVERS = [
-  { 
-    id: 'SUNSET', 
-    name: 'SUNSET', 
-    desc: "Реалистичное выживание: погодные явления, жажда воды и многое другое", 
-    players: 1 
-  },
-  { 
-    id: 'CLASSIC', 
-    name: 'CLASSIC', 
-    desc: "Дополненное выживание: телепортации, торговля и ежедневные задания",  
-    players: 0
-  },
-  { 
-    id: 'OCEAN', 
-    name: 'OCEAN', 
-    desc: "Реалистичное выживание: погодные явления, жажда воды и многое другое", 
-    players: 3 
-  }
-];
-  
-const MOCK_TOTAL = MOCK_SERVERS.reduce((sum, val) => sum + val.players, 0);
-
-/* ФУНКЦИЯ СКЛОНЕНИЯ СЛОВ */
-const getPlural = (number: number, words: string[]) => {
-  const cases = [2, 0, 1, 1, 1, 2];
-  return words[
-    number % 100 > 4 && number % 100 < 20 
-      ? 2 
-      : cases[number % 10 < 5 ? number % 10 : 5]
-  ];
-};
+/* КОНФИГУРАЦИЯ СЕРВЕРОВ (Статичные данные) */
 
 export const ServerOnlineBlock = () => {
-  const [onlineData, setOnlineData] = useState({ MOCK_SERVERS, MOCK_TOTAL });
+  const isDesktop = useBreakpointValue({ base: false, xl: true });
+
+  const SERVER_CONFIG = [
+    { 
+      id: 'sunset', 
+      name: 'SUNSET', 
+      desc: <>погодные явления, жажда{!isDesktop && <br />} воды и температура тела</>, 
+      color: "#ffcdff"
+    },
+    { 
+      id: 'classic', 
+      name: 'CLASSIC', 
+      desc: <>свободный мир без правил, {!isDesktop && <br />} соревнования и торговля</>,  
+      color: "#ffe2c0"
+    },
+    { 
+      id: 'oceans', 
+      name: 'OCEANS', 
+      // Обрати внимание: нет кавычек, используются <> и </>
+      desc: <>развитие  в открытом море, {!isDesktop && <br />} жажда воды и температура</>, 
+      color: "#c0eded"
+    }
+  ];
+  // Изначально ставим всем серверам онлайн 0
+  const [servers, setServers] = useState(
+    SERVER_CONFIG.map(config => ({ ...config, players: 0 }))
+  );
+  const [totalOnline, setTotalOnline] = useState(0);
+
+  // Логика получения данных с бекенда
+  useEffect(() => {
+    const fetchOnline = () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // Таймаут 5 сек
+
+      fetch('http://192.168.0.9:5000/api/online', { signal: controller.signal })
+        .then(res => {
+          if (!res.ok) throw new Error("Ошибка сервера");
+          return res.json();
+        })
+        .then(data => {
+          // data.total - общий онлайн со всех серверов
+          // data.servers - массив онлайна по режимам [{ id: 'SUNSET', players: 15 }, ...]
+          
+          setTotalOnline(data.total);
+          
+          // Обновляем количество игроков в наших красивых карточках
+          setServers(prevServers => 
+            prevServers.map(server => {
+              // Ищем совпадение по ID, игнорируя регистр (SUNSET === sunset)
+              const updatedData = data.servers.find(
+                (s: any) => s.id.toLowerCase() === server.id.toLowerCase()
+              );
+              return updatedData ? { ...server, players: updatedData.players } : server;
+            })
+          );
+        })
+        .catch(error => {
+          if (error.name !== 'AbortError') {
+            console.error("Ошибка при получении онлайна:", error);
+          }
+        })
+        .finally(() => {
+          clearTimeout(timeoutId);
+        });
+    };
+
+    // 1. Делаем первый запрос сразу при загрузке страницы
+    fetchOnline();
+
+    // 2. Запускаем фоновое обновление каждые 10 секунд
+    const intervalId = setInterval(fetchOnline, 10000);
+
+    // Очищаем таймер, если компонент удаляется с экрана
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <>
@@ -75,31 +119,56 @@ export const ServerOnlineBlock = () => {
         transition="all 0.45s ease-out"
       >
         {/* ШАПКА БЛОКА */}
-        <HStack 
+        <Flex 
+          w="full" 
+          justifyContent="space-between" 
           alignItems="center" 
           p="0px"
         >
-          <Box 
-            w={{ xl: "36px", base: "27px" }} 
-            h={{ xl: "36px", base: "27px" }}
-          >
-            <Image 
-              src={onlineLogo} 
-              alt="Онлайн" 
-              fit="fill" 
-              draggable={false} 
-              userSelect="none" 
-            />    
-          </Box>
-          <Text 
-            fontSize={{ base: "xl", xl: "3xl" }} 
-            fontFamily="heading" 
-            color="#80BFFF" 
-            lineHeight="1"
-          >
-            В СЕТИ {onlineData.MOCK_TOTAL} {getPlural(onlineData.MOCK_TOTAL, ['ИГРОК', 'ИГРОКА', 'ИГРОКОВ'])}
-          </Text>
-        </HStack>
+          {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И НАЗВАНИЕ */}
+          <HStack spacing={{ base: 2, xl: 3 }}>
+            <Box 
+              w={{ xl: "36px", base: "27px" }} 
+              h={{ xl: "36px", base: "27px" }}
+            >
+              <Image 
+                src={onlineLogo} 
+                alt="Онлайн" 
+                fit="fill" 
+                draggable={false} 
+                userSelect="none" 
+              />    
+            </Box>
+            <Text 
+              fontSize={{ base: "xl", xl: "3xl" }} 
+              fontFamily="heading" 
+              color="#80BFFF" 
+              lineHeight="1"
+            >
+              НАШИ РЕЖИМЫ
+            </Text>
+          </HStack>
+
+          {/* ПРАВАЯ ЧАСТЬ: ОБЩИЙ ОНЛАЙН И ТОЧКА */}
+          <HStack spacing={2} alignItems="center">
+            <Text 
+              fontSize={{ base: "xl", xl: "3xl" }} 
+              fontFamily="heading" 
+              color="#80BFFF" 
+              lineHeight="1"
+              fontWeight="bold"
+            >
+              {totalOnline}
+            </Text>
+            <Box 
+              w="10px" 
+              h="10px" 
+              borderRadius="3px" 
+              bg="#80BFFF"
+              animation="blink 1.5s infinite"
+            />
+          </HStack>
+        </Flex>
 
         {/* СЕТКА РЕЖИМОВ */}
         <SimpleGrid 
@@ -107,16 +176,17 @@ export const ServerOnlineBlock = () => {
           spacing={{ base: 4, xl: 6 }} 
           w="full"
         >
-          {onlineData.MOCK_SERVERS.map((server) => (
+          {servers.map((server) => (
             <Flex
               key={server.id}
               direction="column"
               alignItems="center"
               bg="transparent"
-              border="solid #80BFFF"
+              border="solid"
+              borderColor={server.color}
               borderWidth={{ xl: "6px", base: "4px" }}
               borderRadius="20px"
-              p={4}
+              p={{xl: 4, base: 2.5}}
               transition="all 0.45s ease-in-out"
             >
               
@@ -128,7 +198,7 @@ export const ServerOnlineBlock = () => {
                 mb={3}
               >
                 <Text 
-                  color="#80BFFF" 
+                  color={server.color} 
                   fontFamily="heading" 
                   fontSize={{ base: "xl", xl: "2xl" }} 
                   fontWeight="bold"
@@ -142,7 +212,7 @@ export const ServerOnlineBlock = () => {
                   alignItems="center"
                 >
                   <Text 
-                    color="#80BFFF" 
+                    color={server.color}
                     fontFamily="heading" 
                     fontSize={{ base: "xl", xl: "2xl" }} 
                     fontWeight="bold"
@@ -156,7 +226,7 @@ export const ServerOnlineBlock = () => {
                     w="10px" 
                     h="10px" 
                     borderRadius="3px" 
-                    bg="#80BFFF" 
+                    bg={server.color}
                     animation="blink 1.5s infinite"
                   />
                 </HStack>
@@ -172,9 +242,9 @@ export const ServerOnlineBlock = () => {
                   w="full"
                   color="white" 
                   fontFamily="heading" 
-                  fontSize={{ base: "md", xl: "lg" }} 
+                  fontSize={{ base: "15px", xl: "lg" }} 
                   textAlign="left"
-                  lineHeight="1.2"
+                  lineHeight="1"
                 >
                   {server.desc}
                 </Text>
