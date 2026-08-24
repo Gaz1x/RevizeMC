@@ -28,7 +28,7 @@ export const SponsorsBlock = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд
 
-      fetch('http://192.168.0.9:5000/api/sponsors', { signal: controller.signal })
+      fetch('https://api.revizemc.net/sponsors', { signal: controller.signal })
         .then((res) => {
           if (!res.ok) throw new Error("Сервер вернул ошибку");
           return res.json();
@@ -70,7 +70,7 @@ export const SponsorsBlock = () => {
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="25px"
       p={4}
-      mt="15px"
+      mt={{xl: "30px", base: "15px"}} 
       align="stretch"
       transition="all 0.45s ease-out"
     >

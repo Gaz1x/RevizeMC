@@ -50,7 +50,7 @@ export const ServerOnlineBlock = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // Таймаут 5 сек
 
-      fetch('http://192.168.0.9:5000/api/online', { signal: controller.signal })
+      fetch('https://api.revizemc.net/online', { signal: controller.signal })
         .then(res => {
           if (!res.ok) throw new Error("Ошибка сервера");
           return res.json();
@@ -113,7 +113,7 @@ export const ServerOnlineBlock = () => {
         borderWidth={{ xl: "6px", base: "4px" }}
         borderRadius="25px"
         p={4}
-        mt="15px"
+        mt={{xl: "30px", base: "15px"}} 
         spacing={4}
         align="stretch"
         transition="all 0.45s ease-out"

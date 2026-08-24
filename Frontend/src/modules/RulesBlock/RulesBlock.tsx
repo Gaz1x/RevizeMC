@@ -467,7 +467,7 @@ export const RulesBlock = () => {
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="25px"
       p={4}
-      mt="15px"
+      mt={{xl: "30px", base: "15px"}} 
       spacing={4}
       align="stretch"
       transition="all 0.45s ease-out"

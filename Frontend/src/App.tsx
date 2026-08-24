@@ -50,7 +50,6 @@ function App() {
           maxW={{ xl: "1300px", base: "370px" }}
           direction={{ base: "column", xl: "row" }}
           justifyContent="space-between"
-          gap={{ base: 4, xl: 0 }} 
           transition="all 0.45s ease-out"
         >
           {/* ЛЕВАЯ КОЛОНКА: Зона покупки */}
@@ -58,7 +57,7 @@ function App() {
             flex="1" 
             display="flex" 
             w="full" 
-            maxW={{ xl: "643px", base: "370px" }}
+            maxW={{ xl: "635px", base: "370px" }}
           >
             <BuyingZone />
           </Box>
@@ -67,7 +66,7 @@ function App() {
           <Box 
             display={{ base: "none", xl: "flex" }} 
             w="full" 
-            maxW={{ xl: "643px", base: "370px" }}
+            maxW={{ xl: "635px", base: "370px" }}
           >
             <SponsorsBlock />
           </Box>

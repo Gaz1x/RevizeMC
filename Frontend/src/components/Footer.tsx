@@ -21,8 +21,8 @@ export const Footer = () => {
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius={{ xl: "25px", base: "20px" }}
       p={4} 
-      mt="15px"
-      mb="15px" 
+      mt={{xl: "30px", base: "15px"}} 
+      mb={{xl: "30px", base: "15px"}} 
       align="center"
       transition="all 0.45s ease-in-out"
     >

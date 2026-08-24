@@ -35,9 +35,7 @@ export const BuyingZone = () => {
   /* СОСТОЯНИЯ КОМПОНЕНТА */
   const [tokens, setTokens] = useState<number>(1000);
 
-  const [smoothValue, setSmoothValue] = useState<number>(
-    (TOKEN_OPTIONS.indexOf(1000) / (TOKEN_OPTIONS.length - 1)) * 100
-  );
+  const [smoothValue, setSmoothValue] = useState<number>(TOKEN_OPTIONS.indexOf(1000));
 
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const [ofertaAccepted, setOfertaAccepted] = useState(false);
@@ -58,7 +56,7 @@ export const BuyingZone = () => {
 
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
-  const rubles = Math.max(0, tokens / 10 - 0.01);
+  const rubles = Math.max(0, tokens / 10 );
 
   /* ЛОГИКА ВАЛИДАЦИИ И ОБРАБОТЧИКИ */
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +111,7 @@ export const BuyingZone = () => {
     // Шаг 1: Если длина ника корректна, проверяем его на сервере (заходил ли игрок)
     if (!isNicknameLocalError) {
       try {
-        const checkRes = await fetch(`http://192.168.0.9:5000/api/check-player/${nickname}`);
+        const checkRes = await fetch(`https://api.revizemc.net/check-player/${nickname}`);
         if (checkRes.ok) {
           const checkData = await checkRes.json();
           // Если сервер сказал, что игрока нет (exists: false) -> это ошибка
@@ -156,7 +154,7 @@ export const BuyingZone = () => {
 
     // Шаг 3: Если ошибок нет вообще, делаем запрос на покупку!
     try {
-      const purchaseRes = await fetch('http://192.168.0.9:5000/api/purchase', {
+      const purchaseRes = await fetch('https://api.revizemc.net/purchase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +174,7 @@ export const BuyingZone = () => {
         setOfertaAccepted(false);
         setRulesAccepted(false);
         setTokens(1000);
-        setSmoothValue((TOKEN_OPTIONS.indexOf(1000) / (TOKEN_OPTIONS.length - 1)) * 100);
+        setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
         // ----------------------------------
 
         // В будущем тут будет редирект на платежную кассу
@@ -200,15 +198,13 @@ export const BuyingZone = () => {
 
   const handleSliderChange = (val: number) => {
     setSmoothValue(val);
-    const maxIdx = TOKEN_OPTIONS.length - 1;
-    const targetIdx = Math.round((val / 100) * maxIdx);
-    setTokens(TOKEN_OPTIONS[targetIdx]);
+    setTokens(TOKEN_OPTIONS[val]);
   };
 
   const handleQuickSelect = (amount: number) => {
     const idx = TOKEN_OPTIONS.indexOf(amount);
     if (idx !== -1) {
-      setSmoothValue((idx / (TOKEN_OPTIONS.length - 1)) * 100);
+      setSmoothValue(idx);
       setTokens(amount);
     }
   };
@@ -260,7 +256,7 @@ export const BuyingZone = () => {
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="25px"
       p={4}
-      mt="15px"
+      mt={{xl: "30px", base: "15px"}} 
       spacing={4}
       align="stretch"
       transition="all 0.45s ease-out"
@@ -388,7 +384,7 @@ export const BuyingZone = () => {
               transform: "scale(0.9)" 
             }}
           >
-            {rubles.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} рублей
+            {rubles.toLocaleString('ru-RU')} рублей
           </Button>
 
           <VStack 
@@ -516,8 +512,8 @@ export const BuyingZone = () => {
             aria-label="token-slider" 
             value={smoothValue} 
             min={0} 
-            max={100} 
-            step={0.1} 
+            max={TOKEN_OPTIONS.length - 1} 
+            step={1} 
             focusThumbOnChange={false} 
             w="full" 
             role="group"
@@ -542,7 +538,8 @@ export const BuyingZone = () => {
                 ml="-10px" 
                 bg="white" 
                 borderLeftRadius="4px" 
-                borderRightRadius="0px" 
+                borderRightRadius="0px"
+                transition="width 0.2s ease-out"
               /> 
             </SliderTrack>
             <SliderThumb 
@@ -552,6 +549,7 @@ export const BuyingZone = () => {
               border="none" 
               outline="none" 
               boxShadow="none !important"
+              transition="left 0.2s ease-out" /* <--- ДОБАВИТЬ ЭТУ СТРОКУ */
               _focus={{ 
                 boxShadow: "none !important", 
                 outline: "none !important" 

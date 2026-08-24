@@ -48,7 +48,7 @@ export const Navbar = () => {
         alignItems="center"
         justifyContent="space-between" 
         gap={0} 
-        mt="15px" 
+        mt={{xl: "30px", base: "15px"}} 
         w="full"
       >
         {/* ГРУППА 1: Логотип + Название (ЛЕВЫЙ КРАЙ) */}
