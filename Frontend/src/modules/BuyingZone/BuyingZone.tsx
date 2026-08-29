@@ -38,19 +38,19 @@ export const BuyingZone = () => {
   const [smoothValue, setSmoothValue] = useState<number>(TOKEN_OPTIONS.indexOf(1000));
   const [isDragging, setIsDragging] = useState(false); 
 
-  const [rulesAccepted, setRulesAccepted] = useState(false);
-  const [ofertaAccepted, setOfertaAccepted] = useState(false);
+  // Единое состояние для соглашения с документами
+  const [documentsAccepted, setDocumentsAccepted] = useState(false);
 
-  const [nickname, setNickname] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Единая ошибка для документов
   const [submitErrors, setSubmitErrors] = useState({
-    nickname: false,
+    username: false,
     email: false,
-    oferta: false,
-    rules: false
+    documents: false 
   });
 
   const [isFlashing, setIsFlashing] = useState(false);
@@ -60,13 +60,13 @@ export const BuyingZone = () => {
   const rubles = Math.max(0, tokens / 10 );
 
   /* ЛОГИКА ВАЛИДАЦИИ И ОБРАБОТЧИКИ */
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors(prev => ({ ...prev, nickname: false })); 
     const value = e.target.value;
     const isValid = /^[a-zA-Z0-9_]*$/.test(value);
 
     if (isValid && value.length <= 16) {
-      setNickname(value);
+      setUsername(value);
     }
   };
 
@@ -102,46 +102,44 @@ export const BuyingZone = () => {
     if (isFlashing || isProcessing) return;
     setIsProcessing(true);
 
-    const isNicknameLocalError = nickname.length < 3;
+    const isUsernameLocalError = username.length < 3;
     const isEmailError = !isEmailValid;
-    const isOfertaError = !ofertaAccepted;
-    const isRulesError = !rulesAccepted;
+    const isDocumentsError = !documentsAccepted;
 
-    let isNicknameServerError = false;
+    let isUsernameServerError = false;
 
     // Шаг 1: Если длина ника корректна, проверяем его на сервере
-    if (!isNicknameLocalError) {
+    if (!isUsernameLocalError) {
       try {
-        const checkRes = await fetch(`https://api.revizemc.net/check-player/${nickname}`);
+        const checkRes = await fetch(`https://api.revizemc.net/check-player/${username}`);
         if (checkRes.ok) {
           const checkData = await checkRes.json();
           if (!checkData.exists) {
-            isNicknameServerError = true;
+            isUsernameServerError = true;
           }
         } else {
-          isNicknameServerError = true;
+          isUsernameServerError = true;
         }
       } catch (error) {
         console.error("Ошибка проверки ника:", error);
-        isNicknameServerError = true;
+        isUsernameServerError = true;
       }
     }
 
-    const finalNicknameError = isNicknameLocalError || isNicknameServerError;
+    const finalUsernameError = isUsernameLocalError || isUsernameServerError;
 
     // Шаг 2: Если есть ошибка - мигаем красным
-    if (finalNicknameError || isEmailError || isOfertaError || isRulesError) {
+    if (finalUsernameError || isEmailError || isDocumentsError) {
       setSubmitErrors({
-        nickname: finalNicknameError,
+        username: finalUsernameError,
         email: isEmailError,
-        oferta: isOfertaError,
-        rules: isRulesError
+        documents: isDocumentsError
       });
 
       setIsFlashing(true);
 
       setTimeout(() => {
-        setSubmitErrors({ nickname: false, email: false, oferta: false, rules: false });
+        setSubmitErrors({ username: false, email: false, documents: false });
       }, 300);
 
       setTimeout(() => {
@@ -160,18 +158,18 @@ export const BuyingZone = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          nickname: nickname,
-          tokens: tokens
+          username: username,
+          action: tokens
         }),
       });
 
       if (purchaseRes.ok) {
         console.log("Оплата успешно инициирована!");
         
-        setNickname("");
+        // --- ОЧИСТКА ПОЛЕЙ ПОСЛЕ УСПЕХА ---
+        setUsername("");
         setEmail("");
-        setOfertaAccepted(false);
-        setRulesAccepted(false);
+        setDocumentsAccepted(false);
         setTokens(1000);
         setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
       } else {
@@ -243,8 +241,6 @@ export const BuyingZone = () => {
     }
   });
 
-  const ofertaError = submitErrors.oferta;
-
   return (
     <VStack
       w="full"
@@ -299,25 +295,25 @@ export const BuyingZone = () => {
           spacing={3}
         >
           <Input 
-            bg={submitErrors.nickname ? "#592828" : "#285928"} 
+            bg={submitErrors.username ? "#592828" : "#285928"} 
             color="white" 
             placeholder="ПСЕВДОНИМ" 
             h="50px" 
             borderRadius="15px" 
             border="solid" 
-            borderColor={submitErrors.nickname ? "#FF8080" : "#80ff80"} 
+            borderColor={submitErrors.username ? "#FF8080" : "#80ff80"} 
             borderWidth={{ xl: "6px", base: "4px" }}
             fontSize="lg" 
             w="full" 
             transition="all 0.3s ease-in-out" 
-            value={nickname} 
-            onChange={handleNicknameChange}
+            value={username} 
+            onChange={handleUsernameChange}
             _placeholder={{ 
-              color: submitErrors.nickname ? "#FF8080" : "#80ff80", 
+              color: submitErrors.username ? "#FF8080" : "#80ff80", 
               transition: "color 0.3s ease-in-out" 
             }}
             _hover={{ 
-              borderColor: submitErrors.nickname ? "#FF8080" : "#80ff80" 
+              borderColor: submitErrors.username ? "#FF8080" : "#80ff80" 
             }} 
             _focus={{ 
               borderColor: "white", 
@@ -385,35 +381,22 @@ export const BuyingZone = () => {
             {rubles.toLocaleString('ru-RU')} рублей
           </Button>
 
-{/* ЕДИНЫЙ БЛОК СОГЛАШЕНИЙ */}
+          {/* ЕДИНЫЙ БЛОК СОГЛАШЕНИЙ */}
           <VStack 
             spacing={{xl: "5.5px", base: "10px"}} 
             alignItems="flex-start" 
             w="full" 
           >
             {/* 1 строка: Чекбокс и основной текст */}
-            <HStack 
-              spacing={3} 
-              cursor="pointer"
-              onClick={() => {
-                const nextState = !ofertaAccepted;
-                setOfertaAccepted(nextState);
-                setRulesAccepted(nextState);
-                setSubmitErrors(prev => ({ ...prev, oferta: false, rules: false }));
-              }}
-            >
-              {/* Контейнер 18px центрирует чекбокс над точками */}
+            <HStack spacing={3}>
               <Flex w="18px" justify="center" align="center">
                 <Checkbox 
-                  isChecked={ofertaAccepted} 
-                  sx={getCheckboxStyles(ofertaError)} 
+                  isChecked={documentsAccepted} 
+                  sx={getCheckboxStyles(submitErrors.documents)} 
                   onChange={(e) => {
-                    const checked = e.target.checked;
-                    setOfertaAccepted(checked);
-                    setRulesAccepted(checked);
-                    setSubmitErrors(prev => ({ ...prev, oferta: false, rules: false }));
+                    setDocumentsAccepted(e.target.checked);
+                    setSubmitErrors(prev => ({ ...prev, documents: false }));
                   }}
-                  onClick={(e) => e.stopPropagation()} // Защита от двойного клика
                 />
               </Flex>
               <Text 
@@ -422,6 +405,11 @@ export const BuyingZone = () => {
                 fontFamily="body" 
                 lineHeight="1"
                 mt="2px"
+                cursor="pointer"
+                onClick={() => {
+                  setDocumentsAccepted(!documentsAccepted);
+                  setSubmitErrors(prev => ({ ...prev, documents: false }));
+                }}
               >
                 ПРИНИМАЮ УСЛОВИЯ ДОКУМЕНТОВ:
               </Text>
@@ -430,17 +418,17 @@ export const BuyingZone = () => {
             {/* 2 строка: Точка и Политика конфиденциальности */}
             <HStack spacing={3}>
               <Flex w="18px" justify="center" align="center">
-                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bg="#80ff80" />
+                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
               </Flex>
               <Text 
                 as="span" 
-                bgColor="#80ff80" 
+                bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
                 bgClip="text" 
                 fontSize={{xl: "11.2px", base: "13.05px"}} 
                 fontFamily="body"
                 lineHeight="1"
                 textAlign="justify"
-                transition="all 0.2s ease-out"
+                transition="all 0.3s ease-in-out"
                 cursor="pointer"
                 onClick={(e) => { 
                   e.stopPropagation(); 
@@ -461,16 +449,16 @@ export const BuyingZone = () => {
             {/* 3 строка: Точка и Пользовательское соглашение */}
             <HStack spacing={3}>
               <Flex w="18px" justify="center" align="center">
-                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bg="#80ff80" />
+                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
               </Flex>
               <Text 
                 as="span" 
-                bgColor="#80ff80" 
+                bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
                 bgClip="text" 
                 fontSize={{xl: "11.4px", base: "13.35px"}} 
                 fontFamily="body"
                 lineHeight="1"
-                transition="all 0.2s ease-out"
+                transition="all 0.3s ease-in-out"
                 textAlign="justify"
                 cursor="pointer"
                 onClick={(e) => { 
@@ -489,6 +477,7 @@ export const BuyingZone = () => {
               </Text>
             </HStack>
           </VStack>
+
         </VStack>
       </Flex>
 

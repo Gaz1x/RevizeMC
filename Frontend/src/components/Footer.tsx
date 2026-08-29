@@ -27,7 +27,7 @@ export const Footer = () => {
       transition="all 0.45s ease-in-out"
     >
 
-      <SimpleGrid columns={{ base: 1, xl: 3 }} spacing={4} w="full" alignItems="stretch">
+      <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={4} w="full" alignItems="stretch">
         
         {/* КОЛОНКА 1: Бренд и копирайт */}
         <Flex 
@@ -60,56 +60,6 @@ export const Footer = () => {
             </Text>
           </Flex>
         </Flex>
-
-        {/* Разделитель 1 (Только мобилки) */}
-        <Divider 
-          display={{ base: "block", xl: "none" }}
-          borderColor="#80BFFF" 
-          borderBottomWidth="4px" 
-          borderRadius="2px"
-          opacity="1"
-        />
-
-        {/* КОЛОНКА 2: Центральный текст */}
-        <Flex 
-          direction="column" 
-          align="center" 
-          justify="space-between" 
-          h="full" 
-          gap={{ base: 2, xl: 0 }}
-        >
-          {/* СТРОКА 1 */}
-          <Flex h={{ xl: "40px", base: "auto" }} align="center">
-            <Text 
-              fontSize={{ base: "19px", xl: "20.5px" }} 
-              fontFamily="heading" 
-              color="whiteAlpha.800" 
-              lineHeight="1"
-            >
-              Неофициальный сервер
-            </Text>
-          </Flex>
-          {/* СТРОКА 2 */}
-          <Flex h={{ xl: "20px", base: "auto" }} align="center">
-            <Text 
-              fontSize={{ base: "16px", xl: "17.3px" }} 
-              fontFamily="heading" 
-              color="whiteAlpha.800" 
-              lineHeight="0.8"
-            >
-              Minecraft © Mojang Studios
-            </Text>
-          </Flex>
-        </Flex>
-
-        {/* Разделитель 2 (Только мобилки) */}
-        <Divider 
-          display={{ base: "block", xl: "none" }} 
-          borderColor="#80BFFF" 
-          borderBottomWidth="4px" 
-          borderRadius="2px" 
-          opacity="1"
-        />
 
         {/* КОЛОНКА 3: Соцсети и Админ */}
         <Flex 
