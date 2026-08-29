@@ -8,7 +8,7 @@ import {
   Flex
 } from '@chakra-ui/react';
 
-import image from "./images/supportLogo.png";
+import image from "./images/support.png";
 
 export const SupportBlock = () => {
   return (

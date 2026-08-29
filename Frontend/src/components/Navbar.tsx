@@ -9,7 +9,7 @@ import {
   Button 
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import logo from "./images/logo1.png";
+import logo from "./images/logo.png";
 
 export const Navbar = () => {
   const { onCopy } = useClipboard("revizemc.net");

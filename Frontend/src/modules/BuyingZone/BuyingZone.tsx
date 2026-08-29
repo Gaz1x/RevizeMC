@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useState } from 'react';
 
-import buyingLogo from './images/greenToken.png';
+import buyingLogo from './images/token.png';
 
 const TOKEN_OPTIONS = [
   1000, 2000, 3000, 4000, 5000,
@@ -36,6 +36,7 @@ export const BuyingZone = () => {
   const [tokens, setTokens] = useState<number>(1000);
 
   const [smoothValue, setSmoothValue] = useState<number>(TOKEN_OPTIONS.indexOf(1000));
+  const [isDragging, setIsDragging] = useState(false); 
 
   const [rulesAccepted, setRulesAccepted] = useState(false);
   const [ofertaAccepted, setOfertaAccepted] = useState(false);
@@ -108,13 +109,12 @@ export const BuyingZone = () => {
 
     let isNicknameServerError = false;
 
-    // Шаг 1: Если длина ника корректна, проверяем его на сервере (заходил ли игрок)
+    // Шаг 1: Если длина ника корректна, проверяем его на сервере
     if (!isNicknameLocalError) {
       try {
         const checkRes = await fetch(`https://api.revizemc.net/check-player/${nickname}`);
         if (checkRes.ok) {
           const checkData = await checkRes.json();
-          // Если сервер сказал, что игрока нет (exists: false) -> это ошибка
           if (!checkData.exists) {
             isNicknameServerError = true;
           }
@@ -129,7 +129,7 @@ export const BuyingZone = () => {
 
     const finalNicknameError = isNicknameLocalError || isNicknameServerError;
 
-    // Шаг 2: Если есть ХОТЯ БЫ ОДНА ошибка (серверная или локальная) - мигаем красным
+    // Шаг 2: Если есть ошибка - мигаем красным
     if (finalNicknameError || isEmailError || isOfertaError || isRulesError) {
       setSubmitErrors({
         nickname: finalNicknameError,
@@ -149,10 +149,10 @@ export const BuyingZone = () => {
       }, 600);
 
       setIsProcessing(false);
-      return; // Останавливаем выполнение, оплату не проводим
+      return;
     }
 
-    // Шаг 3: Если ошибок нет вообще, делаем запрос на покупку!
+    // Шаг 3: Оплата
     try {
       const purchaseRes = await fetch('https://api.revizemc.net/purchase', {
         method: 'POST',
@@ -168,18 +168,13 @@ export const BuyingZone = () => {
       if (purchaseRes.ok) {
         console.log("Оплата успешно инициирована!");
         
-        // --- ОЧИСТКА ПОЛЕЙ ПОСЛЕ УСПЕХА ---
         setNickname("");
         setEmail("");
         setOfertaAccepted(false);
         setRulesAccepted(false);
         setTokens(1000);
         setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
-        // ----------------------------------
-
-        // В будущем тут будет редирект на платежную кассу
       } else {
-        // Если при покупке всё же произошел сбой, подсветим ник
         setSubmitErrors(prev => ({ ...prev, nickname: true }));
         setIsFlashing(true);
         setTimeout(() => setSubmitErrors(prev => ({ ...prev, nickname: false })), 300);
@@ -198,7 +193,13 @@ export const BuyingZone = () => {
 
   const handleSliderChange = (val: number) => {
     setSmoothValue(val);
-    setTokens(TOKEN_OPTIONS[val]);
+    setTokens(TOKEN_OPTIONS[Math.round(val)]);
+  };
+
+  const handleSliderChangeEnd = (val: number) => {
+    const snappedIdx = Math.round(val);
+    setSmoothValue(snappedIdx);
+    setIsDragging(false);
   };
 
   const handleQuickSelect = (amount: number) => {
@@ -243,9 +244,6 @@ export const BuyingZone = () => {
   });
 
   const ofertaError = submitErrors.oferta;
-  const rulesError = submitErrors.rules;
-  const nicknameError = submitErrors.nickname;
-  const emailError = submitErrors.email;
 
   return (
     <VStack
@@ -301,13 +299,13 @@ export const BuyingZone = () => {
           spacing={3}
         >
           <Input 
-            bg={nicknameError ? "#592828" : "#285928"} 
+            bg={submitErrors.nickname ? "#592828" : "#285928"} 
             color="white" 
             placeholder="ПСЕВДОНИМ" 
             h="50px" 
             borderRadius="15px" 
             border="solid" 
-            borderColor={nicknameError ? "#FF8080" : "#80ff80"} 
+            borderColor={submitErrors.nickname ? "#FF8080" : "#80ff80"} 
             borderWidth={{ xl: "6px", base: "4px" }}
             fontSize="lg" 
             w="full" 
@@ -315,11 +313,11 @@ export const BuyingZone = () => {
             value={nickname} 
             onChange={handleNicknameChange}
             _placeholder={{ 
-              color: nicknameError ? "#FF8080" : "#80ff80", 
+              color: submitErrors.nickname ? "#FF8080" : "#80ff80", 
               transition: "color 0.3s ease-in-out" 
             }}
             _hover={{ 
-              borderColor: nicknameError ? "#FF8080" : "#80ff80" 
+              borderColor: submitErrors.nickname ? "#FF8080" : "#80ff80" 
             }} 
             _focus={{ 
               borderColor: "white", 
@@ -327,11 +325,11 @@ export const BuyingZone = () => {
             }}
           />
           <Input 
-            bg={emailError ? "#592828" : "#285928"}  
+            bg={submitErrors.email ? "#592828" : "#285928"}  
             color="white" 
             placeholder="ПОЧТА" 
             border="solid"
-            borderColor={emailError ? "#FF8080" : "#80ff80"}
+            borderColor={submitErrors.email ? "#FF8080" : "#80ff80"}
             borderWidth={{ xl: "6px", base: "4px" }} 
             h="50px" 
             borderRadius="15px" 
@@ -341,11 +339,11 @@ export const BuyingZone = () => {
             value={email} 
             onChange={handleEmailChange}
             _placeholder={{ 
-              color: emailError ? "#FF8080" : "#80ff80",
+              color: submitErrors.email ? "#FF8080" : "#80ff80",
               transition: "color 0.3s ease-in-out"
             }}
             _hover={{ 
-              borderColor: emailError ? "#FF8080" : "#80ff80" 
+              borderColor: submitErrors.email ? "#FF8080" : "#80ff80" 
             }}
             _focus={{ 
               borderColor: "white", 
@@ -387,101 +385,107 @@ export const BuyingZone = () => {
             {rubles.toLocaleString('ru-RU')} рублей
           </Button>
 
+{/* ЕДИНЫЙ БЛОК СОГЛАШЕНИЙ */}
           <VStack 
-            spacing={3} 
-            mt="3px"
+            spacing={{xl: "5.5px", base: "10px"}} 
+            alignItems="flex-start" 
+            w="full" 
           >
+            {/* 1 строка: Чекбокс и основной текст */}
             <HStack 
-              spacing={3}
+              spacing={3} 
+              cursor="pointer"
+              onClick={() => {
+                const nextState = !ofertaAccepted;
+                setOfertaAccepted(nextState);
+                setRulesAccepted(nextState);
+                setSubmitErrors(prev => ({ ...prev, oferta: false, rules: false }));
+              }}
             >
-              <Checkbox 
-                isChecked={ofertaAccepted} 
-                sx={getCheckboxStyles(ofertaError)} 
-                onChange={(e) => {
-                  setOfertaAccepted(e.target.checked);
-                  setSubmitErrors(prev => ({ ...prev, oferta: false }));
-                }} 
-              />
+              {/* Контейнер 18px центрирует чекбокс над точками */}
+              <Flex w="18px" justify="center" align="center">
+                <Checkbox 
+                  isChecked={ofertaAccepted} 
+                  sx={getCheckboxStyles(ofertaError)} 
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setOfertaAccepted(checked);
+                    setRulesAccepted(checked);
+                    setSubmitErrors(prev => ({ ...prev, oferta: false, rules: false }));
+                  }}
+                  onClick={(e) => e.stopPropagation()} // Защита от двойного клика
+                />
+              </Flex>
               <Text 
                 color="white"
-                fontSize="sm" 
+                fontSize={{xl: "11px", base: "12.9px"}} 
                 fontFamily="body" 
-                cursor="pointer" 
                 lineHeight="1"
-                onClick={() => {
-                  setOfertaAccepted(!ofertaAccepted);
-                  setSubmitErrors(prev => ({ ...prev, oferta: false }));
-                }} 
+                mt="2px"
               >
-                СОГЛАСЕН С 
-                <Text 
-                  as="span" 
-                  bgColor="#80ff80" 
-                  bgClip="text" 
-                  cursor="pointer" 
-                  lineHeight="1"
-                  transition="all 0.2s ease-out"
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                  }} 
-                  sx={{ 
-                    '@media (hover: hover) and (pointer: fine)': { 
-                      '&:hover': { 
-                        bgColor: "#FFFFFF", 
-                        transform: "scale(0.99)" 
-                      } 
-                    } 
-                  }}
-                >
-                  {' ДОГОВОРОМ'}
-                </Text>
+                ПРИНИМАЮ УСЛОВИЯ ДОКУМЕНТОВ:
               </Text>
             </HStack>
 
-            <HStack 
-              spacing={3}
-            >
-              <Checkbox 
-                isChecked={rulesAccepted} 
-                sx={getCheckboxStyles(rulesError)} 
-                onChange={(e) => {
-                  setRulesAccepted(e.target.checked);
-                  setSubmitErrors(prev => ({ ...prev, rules: false }));
-                }} 
-              />
+            {/* 2 строка: Точка и Политика конфиденциальности */}
+            <HStack spacing={3}>
+              <Flex w="18px" justify="center" align="center">
+                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bg="#80ff80" />
+              </Flex>
               <Text 
-                color="white"
-                fontSize="sm" 
-                fontFamily="body" 
-                cursor="pointer" 
-                lineHeight="1" 
-                onClick={() => {
-                  setRulesAccepted(!rulesAccepted);
-                  setSubmitErrors(prev => ({ ...prev, rules: false }));
+                as="span" 
+                bgColor="#80ff80" 
+                bgClip="text" 
+                fontSize={{xl: "11.2px", base: "13.05px"}} 
+                fontFamily="body"
+                lineHeight="1"
+                textAlign="justify"
+                transition="all 0.2s ease-out"
+                cursor="pointer"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  window.open('https://www.revizemc.net/privacy-policy.pdf', '_blank'); 
+                }} 
+                sx={{ 
+                  '@media (hover: hover) and (pointer: fine)': { 
+                    '&:hover': { 
+                      bgColor: "#FFFFFF", 
+                    } 
+                  } 
                 }}
               >
-                СОГЛАСЕН С 
-                <Text 
-                  as="span" 
-                  bgColor="#80ff80" 
-                  bgClip="text" 
-                  cursor="pointer" 
-                  lineHeight="1"
-                  transition="all 0.45s ease-out"
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                  }} 
-                  sx={{ 
-                    '@media (hover: hover) and (pointer: fine)': { 
-                      '&:hover': { 
-                        bgColor: "#FFFFFF", 
-                        transform: "scale(0.99)" 
-                      } 
+                ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+              </Text>
+            </HStack>
+
+            {/* 3 строка: Точка и Пользовательское соглашение */}
+            <HStack spacing={3}>
+              <Flex w="18px" justify="center" align="center">
+                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bg="#80ff80" />
+              </Flex>
+              <Text 
+                as="span" 
+                bgColor="#80ff80" 
+                bgClip="text" 
+                fontSize={{xl: "11.4px", base: "13.35px"}} 
+                fontFamily="body"
+                lineHeight="1"
+                transition="all 0.2s ease-out"
+                textAlign="justify"
+                cursor="pointer"
+                onClick={(e) => { 
+                  e.stopPropagation();
+                  window.open('https://www.revizemc.net/terms-of-service.pdf', '_blank');
+                }} 
+                sx={{ 
+                  '@media (hover: hover) and (pointer: fine)': { 
+                    '&:hover': { 
+                      bgColor: "#FFFFFF", 
                     } 
-                  }}
-                >
-                  {' ПРАВИЛАМИ'}
-                </Text>
+                  } 
+                }}
+              >
+                ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
               </Text>
             </HStack>
           </VStack>
@@ -513,11 +517,13 @@ export const BuyingZone = () => {
             value={smoothValue} 
             min={0} 
             max={TOKEN_OPTIONS.length - 1} 
-            step={1} 
+            step={0.01} 
             focusThumbOnChange={false} 
             w="full" 
             role="group"
-            onChange={handleSliderChange} 
+            onChange={handleSliderChange}
+            onChangeStart={() => setIsDragging(true)}
+            onChangeEnd={handleSliderChangeEnd}
             sx={{
               WebkitTapHighlightColor: "transparent !important", 
               WebkitUserSelect: "none !important",
@@ -539,7 +545,7 @@ export const BuyingZone = () => {
                 bg="white" 
                 borderLeftRadius="4px" 
                 borderRightRadius="0px"
-                transition="width 0.2s ease-out"
+                transition={isDragging ? "none" : "width 0.2s ease-out"}
               /> 
             </SliderTrack>
             <SliderThumb 
@@ -549,7 +555,7 @@ export const BuyingZone = () => {
               border="none" 
               outline="none" 
               boxShadow="none !important"
-              transition="left 0.2s ease-out" /* <--- ДОБАВИТЬ ЭТУ СТРОКУ */
+              transition={isDragging ? "none" : "left 0.2s ease-out"}
               _focus={{ 
                 boxShadow: "none !important", 
                 outline: "none !important" 
@@ -573,7 +579,7 @@ export const BuyingZone = () => {
                 borderRadius="6px" 
                 bg="#80ff80" 
                 transition="all 0.15s ease-in-out" 
-                boxShadow="none !important" 
+                boxShadow="none !important"
                 outline="none !important"
                 _groupHover={{ 
                   bg: "white", 

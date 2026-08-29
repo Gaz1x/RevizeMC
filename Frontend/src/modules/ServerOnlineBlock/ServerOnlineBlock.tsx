@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 
-import onlineLogo from './images/onlineLogoNew.png'; 
+import onlineLogo from './images/online.png'; 
 
 /* КОНФИГУРАЦИЯ СЕРВЕРОВ (Статичные данные) */
 

@@ -10,15 +10,15 @@ import {
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 
-import sponsorsLogo from "./images/sponsorLogo.png"; 
+import LatestLogo from "./images/latest.png"; 
 
-interface Sponsor {
+interface Latest {
   username: string;
   token: number;
 }
 
-export const SponsorsBlock = () => {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+export const LatestBlock = () => {
+  const [latests, setLatest] = useState<Latest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -26,15 +26,15 @@ export const SponsorsBlock = () => {
     // Выносим логику запроса в отдельную функцию
     const fetchSponsors = () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд
 
-      fetch('https://api.revizemc.net/sponsors', { signal: controller.signal })
+      fetch('https://api.revizemc.net/latest', { signal: controller.signal })
         .then((res) => {
           if (!res.ok) throw new Error("Сервер вернул ошибку");
           return res.json();
         })
         .then((data) => {
-          setSponsors(data);
+          setLatest(data);
           setHasError(false); // Сбрасываем ошибку, если запрос прошел успешно
           setIsLoading(false);
         })
@@ -84,7 +84,7 @@ export const SponsorsBlock = () => {
           h={{ xl: "36px", base: "27px" }}
         >
           <Image 
-            src={sponsorsLogo} 
+            src={LatestLogo} 
             alt="Спонсоры" 
             fit="fill" 
             draggable={false} 
@@ -97,7 +97,7 @@ export const SponsorsBlock = () => {
           color="#80ff80" 
           lineHeight="1"
         >
-          СПОНСОРЫ ПРОЕКТА
+          ПОСЛЕДНИЕ ПОКУПКИ
         </Text>
       </HStack>
 
@@ -113,7 +113,7 @@ export const SponsorsBlock = () => {
             thickness="4px"
           />
         </Center>
-      ) : hasError || sponsors.length === 0 ? (
+      ) : hasError || latests.length === 0 ? (
         <Center 
           w="full" 
           h="150px"
@@ -124,8 +124,7 @@ export const SponsorsBlock = () => {
             fontSize={{ base: "md", xl: "lg" }}
             textAlign="center"
           >
-            ПОЛНАЯ ЖОПА!<br/>
-            БУДЬ ПЕРВЫМ СПОНСОРОМ!
+            ОШИБКА
           </Text>
         </Center>
       ) : (
@@ -134,22 +133,24 @@ export const SponsorsBlock = () => {
           spacing={0} 
           w="full"
         >
-          {sponsors.map((sponsor, index) => {
-            const isLast = index === sponsors.length - 1;
+          {latests.map((latest, index) => {
+            const isLast = index === latests.length - 1;
 
             return (
               <Flex
-                key={sponsor.username}
+                key={latest.username}
                 justify="space-between"
                 align="center"
                 py={1}
-                borderBottom={isLast ? "none" : "1px solid rgba(128, 191, 255, 0.2)"}
+                borderBottom={isLast ? "none" : "1px solid rgba(128, 255, 128, 0.2)"}
+                pl={"13px"}
+                opacity={1 - index * 0.05}
               >
                 <HStack 
                   spacing={4}
                 >
-                  <Text 
-                    color="#80ff80" 
+                  {/* <Text 
+                    color="rgb(128, 255, 128)" 
                     fontFamily="heading" 
                     fontWeight="bold" 
                     fontSize={{ base: "md", xl: "lg" }}
@@ -157,13 +158,23 @@ export const SponsorsBlock = () => {
                     textAlign="center"
                   >
                     {index + 1}
-                  </Text>
+                  </Text> */}
+                  <Box 
+                    w="10px" 
+                    h="10px" 
+                    borderRadius="3px"
+                    bg="#80ff80"
+                  />
                   <Text 
                     color="white" 
-                    fontFamily="body" 
+                    fontFamily="'DaysSansBlackCaps', sans-serif !important"
+                    // letterSpacing="1px"
+                    lineHeight="0.65"
+                                        align="center"
+
                     fontSize={{ base: "md", xl: "lg" }}
                   >
-                    {sponsor.username}
+                    {latest.username}
                   </Text>
                 </HStack>
                 
@@ -173,7 +184,7 @@ export const SponsorsBlock = () => {
                   fontWeight="bold" 
                   fontSize={{ base: "md", xl: "lg" }}
                 >
-                  {sponsor.token.toLocaleString('ru-RU')}
+                  {latest.token.toLocaleString('ru-RU')} ТОКЕНОВ
                 </Text>
               </Flex>
             );

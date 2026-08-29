@@ -7,7 +7,7 @@ import {
 
 import { Navbar } from './components/Navbar';
 import { BuyingZone } from './modules/BuyingZone/BuyingZone';
-import { SponsorsBlock } from './modules/SponsorBlock/SponsorBlock'; 
+import { LatestBlock } from './modules/SponsorBlock/LatestBlock'; 
 import { RulesBlock } from './modules/RulesBlock/RulesBlock';
 // import { SupportBlock } from './modules/SupportBlock/SupportBlock';
 import { ServerOnlineBlock } from './modules/ServerOnlineBlock/ServerOnlineBlock';
@@ -56,7 +56,7 @@ function App() {
           <Box 
             flex="1" 
             display="flex" 
-            w="full" 
+            w="full"
             maxW={{ xl: "635px", base: "370px" }}
           >
             <BuyingZone />
@@ -68,7 +68,7 @@ function App() {
             w="full" 
             maxW={{ xl: "635px", base: "370px" }}
           >
-            <SponsorsBlock />
+            <LatestBlock />
           </Box>
         </Flex>
 

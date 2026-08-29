@@ -12,7 +12,7 @@ import {
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion'; 
 
-import rulesLogo from "./images/newRulesLogo.png";
+import rulesLogo from "./images/rules.png";
 
 export const RulesBlock = () => {
   /* СОСТОЯНИЯ И РЕФЫ */

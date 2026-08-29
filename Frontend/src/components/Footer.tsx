@@ -86,7 +86,7 @@ export const Footer = () => {
               color="whiteAlpha.800" 
               lineHeight="1"
             >
-              Неофициальный сервер.
+              Неофициальный сервер
             </Text>
           </Flex>
           {/* СТРОКА 2 */}
@@ -97,7 +97,7 @@ export const Footer = () => {
               color="whiteAlpha.800" 
               lineHeight="0.8"
             >
-              Minecraft © Mojang Studios.
+              Minecraft © Mojang Studios
             </Text>
           </Flex>
         </Flex>
