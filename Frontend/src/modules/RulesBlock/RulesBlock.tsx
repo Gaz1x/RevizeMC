@@ -211,7 +211,7 @@ export const RulesBlock = () => {
             color="white" 
             lineHeight="1"
           >
-            3.4. АВТОМАТИЗАЦИЯ{!isDesktop && <br />} (AUTOCLICKER, SCAFFOLD) {!isDesktop && <br />} 
+            3.4. АВТОМАТИЗАЦИЯ{!isDesktop && <br />} (AUTOCLICKER, AUTOTOOLS) {!isDesktop && <br />} 
             <Text 
               as="span" 
               color="#ffff80"
@@ -240,6 +240,20 @@ export const RulesBlock = () => {
             lineHeight="1"
           >
             3.6. АВТОНОМНЫЕ БОТЫ{!isDesktop && <br />} (BARITONE, AUTOFISH) {!isDesktop && <br />} 
+            <Text 
+              as="span" 
+              color="#ffff80"
+            >
+              {' БЛОКИРОВКА НАВСЕГДА '}
+            </Text>
+          </Text>
+          <Text 
+            fontSize={{ xl: "lg", base: "15px" }} 
+            mb={2} 
+            color="white" 
+            lineHeight="1"
+          >
+            3.7. СТРОИТЕЛЬСТВО (SCAFFOLD, PRINTER) {!isDesktop && <br />} 
             <Text 
               as="span" 
               color="#ffff80"

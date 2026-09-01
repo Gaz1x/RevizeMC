@@ -25,11 +25,6 @@ const TOKEN_OPTIONS = [
   100000, 200000, 300000, 400000, 500000
 ];
 
-const POPULAR_DOMAINS = [
-  'gmail.com', 'mail.ru', 'yandex.ru', 'bk.ru', 'inbox.ru',
-  'list.ru', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com'
-];
-
 export const BuyingZone = () => {
 
   /* СОСТОЯНИЯ КОМПОНЕНТА */
@@ -38,7 +33,6 @@ export const BuyingZone = () => {
   const [smoothValue, setSmoothValue] = useState<number>(TOKEN_OPTIONS.indexOf(1000));
   const [isDragging, setIsDragging] = useState(false); 
 
-  // Единое состояние для соглашения с документами
   const [documentsAccepted, setDocumentsAccepted] = useState(false);
 
   const [username, setUsername] = useState("");
@@ -46,7 +40,6 @@ export const BuyingZone = () => {
   
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Единая ошибка для документов
   const [submitErrors, setSubmitErrors] = useState({
     username: false,
     email: false,
@@ -61,7 +54,7 @@ export const BuyingZone = () => {
 
   /* ЛОГИКА ВАЛИДАЦИИ И ОБРАБОТЧИКИ */
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubmitErrors(prev => ({ ...prev, nickname: false })); 
+    setSubmitErrors(prev => ({ ...prev, username: false })); 
     const value = e.target.value;
     const isValid = /^[a-zA-Z0-9_]*$/.test(value);
 
@@ -72,46 +65,26 @@ export const BuyingZone = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors(prev => ({ ...prev, email: false }));
-    const value = e.target.value;
-    const validEmailChars = /^[a-zA-Z0-9._+@-]*$/;
-
-    if (!validEmailChars.test(value)) return;
-
-    const parts = value.split('@');
-    if (parts.length > 2) return;
-
-    const localPart = parts[0];
-    if (localPart.length > 64) return;
-    if (/^[.\-_]/.test(localPart)) return;
-    if (/[.\-_]{2,}/.test(localPart)) return;
-
-    setEmail(value);
+    // Убрали всю сложную логику, просто сохраняем введенный текст (без пробелов)
+    setEmail(e.target.value.trim());
   };
-
-  const emailParts = email.split('@');
-  const localPartFinal = emailParts[0];
-  const domainFinal = emailParts[1];
-
-  const isEmailValid = 
-    emailParts.length === 2 && 
-    localPartFinal.length > 0 && 
-    !/[.\-_]$/.test(localPartFinal) && 
-    POPULAR_DOMAINS.includes(domainFinal);
 
   const handlePayClick = async () => {
     if (isFlashing || isProcessing) return;
     setIsProcessing(true);
 
     const isUsernameLocalError = username.length < 3;
-    const isEmailError = !isEmailValid;
+    // Легкая локальная проверка: есть ли текст, собака и точка после нее
+    const isEmailLocalError = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isDocumentsError = !documentsAccepted;
 
     let isUsernameServerError = false;
+    let isEmailServerError = false;
 
-    // Шаг 1: Если длина ника корректна, проверяем его на сервере
+    // Шаг 1.1: Проверяем ник на сервере
     if (!isUsernameLocalError) {
       try {
-        const checkRes = await fetch(`https://api.revizemc.net/check-player/${username}`);
+        const checkRes = await fetch(`https://api.revizemc.net/player/${username}`);
         if (checkRes.ok) {
           const checkData = await checkRes.json();
           if (!checkData.exists) {
@@ -125,14 +98,34 @@ export const BuyingZone = () => {
         isUsernameServerError = true;
       }
     }
+    
+    // Шаг 1.2: Глубокая проверка почты на сервере (только если она прошла легкую проверку)
+    if (!isEmailLocalError) {
+      try {
+        // Укажи здесь правильный эндпоинт своего бекенда для проверки почты
+        const emailRes = await fetch('https://api.revizemc.net/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        
+        if (emailRes.ok) {
+          const emailData = await emailRes.json();
+          if (!emailData.valid) isEmailServerError = true; 
+        }
+      } catch (error) {
+        console.error("Ошибка проверки почты:", error);
+      }
+    }
 
+    const finalEmailError = isEmailLocalError || isEmailServerError; 
     const finalUsernameError = isUsernameLocalError || isUsernameServerError;
 
     // Шаг 2: Если есть ошибка - мигаем красным
-    if (finalUsernameError || isEmailError || isDocumentsError) {
+    if (finalUsernameError || finalEmailError || isDocumentsError) {
       setSubmitErrors({
         username: finalUsernameError,
-        email: isEmailError,
+        email: finalEmailError,
         documents: isDocumentsError
       });
 
@@ -159,30 +152,29 @@ export const BuyingZone = () => {
         },
         body: JSON.stringify({
           username: username,
-          action: tokens
+          action: String(tokens)
         }),
       });
 
       if (purchaseRes.ok) {
         console.log("Оплата успешно инициирована!");
         
-        // --- ОЧИСТКА ПОЛЕЙ ПОСЛЕ УСПЕХА ---
         setUsername("");
         setEmail("");
         setDocumentsAccepted(false);
         setTokens(1000);
         setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
       } else {
-        setSubmitErrors(prev => ({ ...prev, nickname: true }));
+        setSubmitErrors(prev => ({ ...prev, username: true }));
         setIsFlashing(true);
-        setTimeout(() => setSubmitErrors(prev => ({ ...prev, nickname: false })), 300);
+        setTimeout(() => setSubmitErrors(prev => ({ ...prev, username: false })), 300);
         setTimeout(() => setIsFlashing(false), 600);
       }
     } catch (error) {
       console.error("Сбой оплаты:", error);
-      setSubmitErrors(prev => ({ ...prev, nickname: true }));
+      setSubmitErrors(prev => ({ ...prev, username: true }));
       setIsFlashing(true);
-      setTimeout(() => setSubmitErrors(prev => ({ ...prev, nickname: false })), 300);
+      setTimeout(() => setSubmitErrors(prev => ({ ...prev, username: false })), 300);
       setTimeout(() => setIsFlashing(false), 600);
     } finally {
       setIsProcessing(false);
@@ -388,9 +380,12 @@ export const BuyingZone = () => {
             w="full" 
           >
             {/* 1 строка: Чекбокс и основной текст */}
-            <HStack spacing={3}>
-              <Flex w="18px" justify="center" align="center">
-                <Checkbox 
+            <HStack 
+              spacing={3} 
+            >
+              <Flex w="18px" justify="center" align="center" >
+                <Checkbox
+                  id="documents-check"
                   isChecked={documentsAccepted} 
                   sx={getCheckboxStyles(submitErrors.documents)} 
                   onChange={(e) => {
@@ -400,82 +395,78 @@ export const BuyingZone = () => {
                 />
               </Flex>
               <Text 
+                as="label"
+                htmlFor="documents-check"
                 color="white"
                 fontSize={{xl: "11px", base: "12.9px"}} 
                 fontFamily="body" 
                 lineHeight="1"
                 mt="2px"
                 cursor="pointer"
-                onClick={() => {
-                  setDocumentsAccepted(!documentsAccepted);
-                  setSubmitErrors(prev => ({ ...prev, documents: false }));
-                }}
               >
                 ПРИНИМАЮ УСЛОВИЯ ДОКУМЕНТОВ:
               </Text>
             </HStack>
 
-            {/* 2 строка: Точка и Политика конфиденциальности */}
-            <HStack spacing={3}>
-              <Flex w="18px" justify="center" align="center">
-                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
-              </Flex>
-              <Text 
-                as="span" 
-                bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
-                bgClip="text" 
-                fontSize={{xl: "11.2px", base: "13.05px"}} 
-                fontFamily="body"
-                lineHeight="1"
-                textAlign="justify"
-                transition="all 0.3s ease-in-out"
-                cursor="pointer"
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  window.open('https://www.revizemc.net/privacy-policy.pdf', '_blank'); 
-                }} 
-                sx={{ 
-                  '@media (hover: hover) and (pointer: fine)': { 
-                    '&:hover': { 
-                      bgColor: "#FFFFFF", 
+            <VStack alignItems="flex-start" spacing={2}>
+              {/* 2 строка: Точка и Политика конфиденциальности */}
+              <HStack spacing={3}>
+                <Flex w="18px" justify="center" align="center">
+                  <Box w="6px" h="6px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
+                </Flex>
+                <Text 
+                  as="span" 
+                  bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
+                  bgClip="text" 
+                  fontSize={{xl: "11.2px", base: "13.05px"}} 
+                  fontFamily="body"
+                  lineHeight="1"
+                  textAlign="justify"
+                  transition="all 0.2s ease-out"
+                  cursor="pointer"
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    window.open('https://www.revizemc.net/privacy-policy.pdf', '_blank'); 
+                  }} 
+                  sx={{ 
+                    '@media (hover: hover) and (pointer: fine)': { 
+                      '&:hover': { bgColor: "#FFFFFF" } 
                     } 
-                  } 
-                }}
-              >
-                ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
-              </Text>
-            </HStack>
+                  }}
+                >
+                  ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
+                </Text>
+              </HStack>
 
-            {/* 3 строка: Точка и Пользовательское соглашение */}
-            <HStack spacing={3}>
-              <Flex w="18px" justify="center" align="center">
-                <Box w="7.5px" h="7.5px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
-              </Flex>
-              <Text 
-                as="span" 
-                bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
-                bgClip="text" 
-                fontSize={{xl: "11.4px", base: "13.35px"}} 
-                fontFamily="body"
-                lineHeight="1"
-                transition="all 0.3s ease-in-out"
-                textAlign="justify"
-                cursor="pointer"
-                onClick={(e) => { 
-                  e.stopPropagation();
-                  window.open('https://www.revizemc.net/terms-of-service.pdf', '_blank');
-                }} 
-                sx={{ 
-                  '@media (hover: hover) and (pointer: fine)': { 
-                    '&:hover': { 
-                      bgColor: "#FFFFFF", 
+              {/* 3 строка: Точка и Пользовательское соглашение */}
+              <HStack spacing={3}>
+                <Flex w="18px" justify="center" align="center">
+                  <Box w="6px" h="6px" borderRadius="1.5px" bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} transition="all 0.3s ease-in-out"/>
+                </Flex>
+                <Text 
+                  as="span" 
+                  bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"} 
+                  bgClip="text" 
+                  fontSize={{xl: "11.4px", base: "13.35px"}} 
+                  fontFamily="body"
+                  lineHeight="1"
+                  transition="all 0.2s ease-out"
+                  textAlign="justify"
+                  cursor="pointer"
+                  onClick={(e) => { 
+                    e.stopPropagation();
+                    window.open('https://www.revizemc.net/terms-of-service.pdf', '_blank');
+                  }} 
+                  sx={{ 
+                    '@media (hover: hover) and (pointer: fine)': { 
+                      '&:hover': { bgColor: "#FFFFFF" } 
                     } 
-                  } 
-                }}
-              >
-                ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
-              </Text>
-            </HStack>
+                  }}
+                >
+                  ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
+                </Text>
+              </HStack>
+            </VStack>
           </VStack>
 
         </VStack>
