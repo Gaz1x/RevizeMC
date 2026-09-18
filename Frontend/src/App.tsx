@@ -69,7 +69,7 @@ function App() {
         {/* <ServerOnlineBlock /> */}
         {/* <RulesBlock /> */}
         {/* <SupportBlock /> */}
-        <MediaBlock/>
+        <MediaBlock />
         <Footer />
       </Container>
     </ChakraProvider>

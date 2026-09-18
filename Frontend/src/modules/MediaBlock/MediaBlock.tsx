@@ -6,9 +6,9 @@ import {
   Flex,
   Image,
   SimpleGrid,
-  Button
-} from '@chakra-ui/react';
-import { motion } from 'framer-motion';
+  Button,
+} from "@chakra-ui/react";
+import { motion } from "framer-motion";
 
 import mediaLogo from "./images/media.png";
 
@@ -20,14 +20,14 @@ export const MediaBlock = () => {
   const benefits = [
     "ДЕЛИМСЯ ОПЫТОМ ВЕДЕНИЯ КАНАЛОВ",
     "РАЗРАБАТЫВАЕМ РЕЖИМЫ ДЛЯ СЪЁМОК",
-    "ОБМЕНИВАЕМСЯ АКТИВНОЙ АУДИТОРИЕЙ"
+    "ОБМЕНИВАЕМСЯ АКТИВНОЙ АУДИТОРИЕЙ",
   ];
 
   return (
     <VStack
       w="full"
       maxW={{ xl: "1300px", base: "370px" }}
-      bgGradient={`linear(to-t, transparent, rgba(255, 128, 128, 0.15))` }
+      bgGradient={`linear(to-t, transparent, rgba(255, 128, 128, 0.15))`}
       border="solid"
       borderColor={mainColor}
       borderWidth={{ xl: "6px", base: "4px" }}
@@ -40,22 +40,19 @@ export const MediaBlock = () => {
     >
       {/* ШАПКА БЛОКА */}
       <HStack alignItems="center" spacing={3}>
-        <Box 
-          w={{ xl: "36px", base: "27px" }} 
-          h={{ xl: "36px", base: "27px" }}
-        >
+        <Box w={{ xl: "36px", base: "27px" }} h={{ xl: "36px", base: "27px" }}>
           <Image
             src={mediaLogo}
             alt="Медиа"
             fit="fill"
-            draggable={false} 
+            draggable={false}
             userSelect="none"
-          />    
+          />
         </Box>
 
-        <Text 
-          fontSize={{ base: "xl", xl: "3xl" }} 
-          fontFamily="heading" 
+        <Text
+          fontSize={{ base: "xl", xl: "3xl" }}
+          fontFamily="heading"
           color={mainColor}
           lineHeight="1"
         >
@@ -65,7 +62,6 @@ export const MediaBlock = () => {
 
       {/* ОСНОВНОЙ КОНТЕНТ (СЕТКА) */}
       <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={4} w="full">
-        
         {/* ЛЕВАЯ КОЛОНКА (Информационная) */}
         <Flex
           direction="column"
@@ -77,43 +73,46 @@ export const MediaBlock = () => {
           justifyContent="center"
           gap={4}
         >
-          <Text 
-            color="white" 
-            fontFamily="heading" 
-            fontSize={{ xl: "lg", base: "md" }} 
-            fontWeight="bold" 
+          <Text
+            color="white"
+            fontFamily="heading"
+            fontSize={{ xl: "lg", base: "md" }}
+            fontWeight="bold"
             lineHeight="1.2"
           >
-            НАША КОМАНДА ПОДДЕРЖИВАЕТ АВТОРОВ ОРИГИНАЛЬНОГО КОНТЕНТА И СТРЕМИТСЯ СФОРМИРОВАТЬ АКТИВНОЕ СООБЩЕСТВО
+            НАША КОМАНДА ПОДДЕРЖИВАЕТ АВТОРОВ ОРИГИНАЛЬНОГО КОНТЕНТА И СТРЕМИТСЯ
+            СФОРМИРОВАТЬ АКТИВНОЕ СООБЩЕСТВО
           </Text>
-          <Text 
-            color="white" 
-            fontFamily="heading" 
-            fontSize={{ xl: "lg", base: "md" }} 
-            fontWeight="bold" 
+          <Text
+            color="white"
+            fontFamily="heading"
+            fontSize={{ xl: "lg", base: "md" }}
+            fontWeight="bold"
             lineHeight="1.2"
           >
-            НАШ КОЛЛЕКТИВ ПОМОЖЕТ ВАМ ОБРЕСТИ НОВЫЙ МАСШТАБ И ПОВЫСИТЬ ПЛАНКУ КАЧЕСТВА ВИДЕОРОЛИКОВ НА КАНАЛЕ
+            НАШ КОЛЛЕКТИВ ПОМОЖЕТ ВАМ ОБРЕСТИ НОВЫЙ МАСШТАБ И ПОВЫСИТЬ ПЛАНКУ
+            КАЧЕСТВА ВИДЕОРОЛИКОВ НА КАНАЛЕ
           </Text>
-          <Text 
-            color="white" 
-            fontFamily="heading" 
-            fontSize={{ xl: "lg", base: "md" }} 
-            fontWeight="bold" 
+          <Text
+            color="white"
+            fontFamily="heading"
+            fontSize={{ xl: "lg", base: "md" }}
+            fontWeight="bold"
             lineHeight="1.2"
           >
-            СОЗДАВАЙТЕ КОНТЕНТ НА НАШИХ РЕЖИМАХ ИЛИ ПРОВОДИТЕ ИВЕНТЫ, ЧТОБЫ ВЫЙТИ НА НОВЫЙ УРОВЕНЬ КОНТАКТА СО ЗРИТЕЛЯМИ
+            СОЗДАВАЙТЕ КОНТЕНТ НА НАШИХ РЕЖИМАХ ИЛИ ПРОВОДИТЕ ИВЕНТЫ, ЧТОБЫ
+            ВЫЙТИ НА НОВЫЙ УРОВЕНЬ КОНТАКТА СО ЗРИТЕЛЯМИ
           </Text>
         </Flex>
 
         {/* ПРАВАЯ КОЛОНКА (Рамки с текстом и кнопка) */}
         <Flex
           direction="column"
-        //   borderRadius="18px"
-        //   border="solid"
-        //   borderColor={mainColor}
-        //   borderWidth={{ xl: "6px", base: "4px" }}
-        //   p={4}
+          //   borderRadius="18px"
+          //   border="solid"
+          //   borderColor={mainColor}
+          //   borderWidth={{ xl: "6px", base: "4px" }}
+          //   p={4}
           gap={4} // Одинаковое расстояние между всеми рамками и кнопкой
         >
           {/* Рендерим каждую строчку в своей рамке */}
@@ -131,13 +130,12 @@ export const MediaBlock = () => {
               py={2}
               textAlign="center"
               minH={{ xl: "50px", base: "45px" }}
-
             >
-              <Text 
-                color="white" 
-                fontFamily="heading" 
-                fontSize={{ xl: "lg", base: "md" }} 
-                fontWeight="bold" 
+              <Text
+                color="white"
+                fontFamily="heading"
+                fontSize={{ xl: "lg", base: "md" }}
+                fontWeight="bold"
                 lineHeight="1"
               >
                 {text}
@@ -160,11 +158,11 @@ export const MediaBlock = () => {
             fontWeight="bold"
             fontSize={{ xl: "lg", base: "md" }}
             transition="all 0.2s ease-out"
-            _hover={{ 
-              transform: "scale(0.98)", 
+            _hover={{
+              transform: "scale(0.98)",
             }}
-            _active={{ 
-              transform: "scale(0.95)" 
+            _active={{
+              transform: "scale(0.95)",
             }}
             onClick={() => {
               window.open("https://t.me/revizemc?direct", "_blank");
@@ -173,7 +171,6 @@ export const MediaBlock = () => {
             ПРИСОЕДИНИТЬСЯ
           </Button>
         </Flex>
-
       </SimpleGrid>
     </VStack>
   );

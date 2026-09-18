@@ -6,11 +6,11 @@ import {
   Flex,
   Image,
   Spinner,
-  Center
-} from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+  Center,
+} from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 
-import LatestLogo from "./images/latest.png"; 
+import LatestLogo from "./images/latest.png";
 
 interface Latest {
   username: string;
@@ -28,7 +28,7 @@ export const LatestBlock = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд
 
-      fetch('https://api.revizemc.net/latest', { signal: controller.signal })
+      fetch("https://api.revizemc.net/latest", { signal: controller.signal })
         .then((res) => {
           if (!res.ok) throw new Error("Сервер вернул ошибку");
           return res.json();
@@ -39,7 +39,7 @@ export const LatestBlock = () => {
           setIsLoading(false);
         })
         .catch((error) => {
-          if (error.name !== 'AbortError') {
+          if (error.name !== "AbortError") {
             console.error("Сбой при загрузке спонсоров:", error);
             setHasError(true);
           }
@@ -59,7 +59,7 @@ export const LatestBlock = () => {
     // 3. Обязательно очищаем таймер, если пользователь уйдет на другую страницу,
     // чтобы запросы не продолжали лететь в фоне
     return () => clearInterval(intervalId);
-  }, []);;
+  }, []);
 
   return (
     <VStack
@@ -70,32 +70,25 @@ export const LatestBlock = () => {
       borderWidth={{ xl: "6px", base: "4px" }}
       borderRadius="25px"
       p={4}
-      mt={{xl: "30px", base: "15px"}} 
+      mt={{ xl: "30px", base: "15px" }}
       align="stretch"
       transition="all 0.45s ease-out"
     >
       {/* ШАПКА БЛОКА */}
-      <HStack 
-        alignItems="center" 
-        p="0px"
-        spacing={3}
-      >
-        <Box 
-          w={{ xl: "36px", base: "27px" }} 
-          h={{ xl: "36px", base: "27px" }}
-        >
-          <Image 
-            src={LatestLogo} 
-            alt="Спонсоры" 
-            fit="fill" 
-            draggable={false} 
-            userSelect="none" 
-          />    
+      <HStack alignItems="center" p="0px" spacing={3}>
+        <Box w={{ xl: "36px", base: "27px" }} h={{ xl: "36px", base: "27px" }}>
+          <Image
+            src={LatestLogo}
+            alt="Спонсоры"
+            fit="fill"
+            draggable={false}
+            userSelect="none"
+          />
         </Box>
-        <Text 
-          fontSize={{ base: "xl", xl: "3xl" }} 
-          fontFamily="heading" 
-          color="#80ff80" 
+        <Text
+          fontSize={{ base: "xl", xl: "3xl" }}
+          fontFamily="heading"
+          color="#80ff80"
           lineHeight="1"
         >
           ПОСЛЕДНИЕ ПОКУПКИ
@@ -104,24 +97,14 @@ export const LatestBlock = () => {
 
       {/* ЛОГИКА ОТОБРАЖЕНИЯ (Загрузка / Ошибка или Пустота / Список) */}
       {isLoading ? (
-        <Center 
-          w="full" 
-          h="150px"
-        >
-          <Spinner 
-            color="#80ff80" 
-            size="xl" 
-            thickness="4px"
-          />
+        <Center w="full" h="150px">
+          <Spinner color="#80ff80" size="xl" thickness="4px" />
         </Center>
       ) : hasError || latests.length === 0 ? (
-        <Center 
-          w="full" 
-          h="150px"
-        >
-          <Text 
-            color="whiteAlpha.700" 
-            fontFamily="heading" 
+        <Center w="full" h="150px">
+          <Text
+            color="whiteAlpha.700"
+            fontFamily="heading"
             fontSize={{ base: "md", xl: "lg" }}
             textAlign="center"
           >
@@ -129,11 +112,7 @@ export const LatestBlock = () => {
           </Text>
         </Center>
       ) : (
-        <VStack 
-          align="stretch" 
-          spacing={0} 
-          w="full"
-        >
+        <VStack align="stretch" spacing={0} w="full">
           {latests.map((latest, index) => {
             const isLast = index === latests.length - 1;
 
@@ -143,13 +122,13 @@ export const LatestBlock = () => {
                 justify="space-between"
                 align="center"
                 py={1}
-                borderBottom={isLast ? "none" : "1px solid rgba(128, 255, 128, 0.2)"}
+                borderBottom={
+                  isLast ? "none" : "1px solid rgba(128, 255, 128, 0.2)"
+                }
                 pl={"13px"}
                 opacity={1 - index * 0.05}
               >
-                <HStack 
-                  spacing={4}
-                >
+                <HStack spacing={4}>
                   {/* <Text 
                     color="rgb(128, 255, 128)" 
                     fontFamily="heading" 
@@ -160,29 +139,23 @@ export const LatestBlock = () => {
                   >
                     {index + 1}
                   </Text> */}
-                  <Box 
-                    w="10px" 
-                    h="10px" 
-                    borderRadius="3px"
-                    bg="#80ff80"
-                  />
-                  <Text 
-                    color="white" 
+                  <Box w="10px" h="10px" borderRadius="3px" bg="#80ff80" />
+                  <Text
+                    color="white"
                     fontFamily="'DaysSansBlackCaps', sans-serif !important"
                     // letterSpacing="1px"
                     lineHeight="0.65"
-                                        align="center"
-
+                    align="center"
                     fontSize={{ base: "md", xl: "lg" }}
                   >
                     {latest.username}
                   </Text>
                 </HStack>
-                
-                <Text 
-                  color="#80ff80" 
-                  fontFamily="heading" 
-                  fontWeight="bold" 
+
+                <Text
+                  color="#80ff80"
+                  fontFamily="heading"
+                  fontWeight="bold"
                   fontSize={{ base: "md", xl: "lg" }}
                 >
                   {latest.action} ТОКЕНОВ

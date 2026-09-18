@@ -1,9 +1,4 @@
-import {
-  Flex,
-  Text,
-  Link,
-  useBreakpointValue,
-} from "@chakra-ui/react";
+import { Flex, Text, Link, useBreakpointValue } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
 export const Footer = () => {
@@ -31,14 +26,13 @@ export const Footer = () => {
 
   return (
     <Flex
-
       w="full"
       maxW={{ xl: "1300px", base: "370px" }}
       bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
       border="solid #80BFFF"
       borderWidth={{ xl: "6px", base: "4px" }}
       // Закругление в виде таблетки для ПК и обычное для телефонов
-      borderRadius={{ xl: "25px", base: "25px" }} 
+      borderRadius={{ xl: "25px", base: "25px" }}
       py={4}
       px={4}
       mt={{ xl: "30px", base: "15px" }}
@@ -60,31 +54,31 @@ export const Footer = () => {
       </Text>
 
       {/* ЦЕНТРАЛЬНАЯ ЧАСТЬ: Документы */}
-      <Flex 
-        direction={{ base: "column", xl: "row" }} 
-        alignItems="center" 
+      <Flex
+        direction={{ base: "column", xl: "row" }}
+        alignItems="center"
         gap={{ base: 3, xl: 10 }}
       >
-<Text 
+        <Text
           {...linkStyles}
           onClick={(e) => {
             e.stopPropagation();
             window.open(
               "https://www.revizemc.net/terms-of-service.pdf",
-              "_blank"
+              "_blank",
             );
           }}
         >
           ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
         </Text>
-        
-        <Text 
+
+        <Text
           {...linkStyles}
           onClick={(e) => {
             e.stopPropagation();
             window.open(
               "https://www.revizemc.net/privacy-policy.pdf",
-              "_blank"
+              "_blank",
             );
           }}
         >
@@ -93,7 +87,7 @@ export const Footer = () => {
       </Flex>
 
       {/* ПРАВАЯ ЧАСТЬ: Почта */}
-      <Text 
+      <Text
         {...linkStyles}
         onClick={(e) => {
           e.stopPropagation();
