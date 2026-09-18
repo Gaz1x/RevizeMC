@@ -1,46 +1,37 @@
-import { 
-  ChakraProvider, 
-  Container, 
-  Box, 
-  Flex 
-} from '@chakra-ui/react';
+import { ChakraProvider, Container, Box, Flex } from "@chakra-ui/react";
 
-import { Navbar } from './components/Navbar';
-import { BuyingZone } from './modules/BuyingZone/BuyingZone';
-import { LatestBlock } from './modules/SponsorBlock/LatestBlock'; 
-import { RulesBlock } from './modules/RulesBlock/RulesBlock';
+import { Navbar } from "./components/Navbar";
+import { BuyingZone } from "./modules/BuyingZone/BuyingZone";
+import { LatestBlock } from "./modules/SponsorBlock/LatestBlock";
+import { RulesBlock } from "./modules/RulesBlock/RulesBlock";
+import { MediaBlock } from "./modules/MediaBlock/MediaBlock";
 // import { SupportBlock } from './modules/SupportBlock/SupportBlock';
-import { ServerOnlineBlock } from './modules/ServerOnlineBlock/ServerOnlineBlock';
-import { Footer } from './components/Footer';
+import { ServerOnlineBlock } from "./modules/ServerOnlineBlock/ServerOnlineBlock";
+import { Footer } from "./components/Footer";
 
-import theme from './theme';
-import './assets/dayssansblack.css';
+import theme from "./theme";
+import "./assets/dayssansblack.css";
 
 function App() {
   return (
     <ChakraProvider theme={theme}>
       {/* ФОНОВОЕ ПОКРЫТИЕ */}
-      <Box 
-        position="fixed" 
-        top={0} 
-        left={0} 
-        right={0} 
-        bottom={0} 
-        zIndex={-1} 
-      />
-      
+      <Box position="fixed" top={0} left={0} right={0} bottom={0} zIndex={-1} />
+
       {/* ГЛАВНЫЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ */}
-      <Container 
-        minW="100%" 
-        minH="100dvh" 
-        centerContent 
-        p={0} 
-        position="relative" 
-        zIndex={1} 
+      <Container
+        minW="100%"
+        minH="100dvh"
+        centerContent
+        p={0}
+        position="relative"
+        zIndex={1}
         bgGradient="linear(to-b, #192c3f, #071019)"
       >
         <Navbar />
-        
+
+        <ServerOnlineBlock />
+
         {/* 
           ВЕРХНИЙ РЯД БЛОКОВ 
           Chakra UI сама выстроит их в колонку на телефонах и в строку на ПК 
@@ -53,9 +44,9 @@ function App() {
           transition="all 0.45s ease-out"
         >
           {/* ЛЕВАЯ КОЛОНКА: Зона покупки */}
-          <Box 
-            flex="1" 
-            display="flex" 
+          <Box
+            flex="1"
+            display="flex"
             w="full"
             maxW={{ xl: "635px", base: "370px" }}
           >
@@ -63,20 +54,22 @@ function App() {
           </Box>
 
           {/* ПРАВАЯ КОЛОНКА: Спонсоры (Скрыты на мобильных устройствах) */}
-          <Box 
-            display={{ base: "none", xl: "flex" }} 
-            w="full" 
+          <Box
+            display={{ base: "none", xl: "flex" }}
+            // display="flex"
+            w="full"
             maxW={{ xl: "635px", base: "370px" }}
           >
             <LatestBlock />
+            {/* <RulesBlock /> */}
           </Box>
         </Flex>
 
         {/* ОСТАЛЬНЫЕ БЛОКИ */}
-        <ServerOnlineBlock />
-        <RulesBlock />
+        {/* <ServerOnlineBlock /> */}
+        {/* <RulesBlock /> */}
         {/* <SupportBlock /> */}
-        
+        <MediaBlock/>
         <Footer />
       </Container>
     </ChakraProvider>

@@ -78,6 +78,7 @@ export const LatestBlock = () => {
       <HStack 
         alignItems="center" 
         p="0px"
+        spacing={3}
       >
         <Box 
           w={{ xl: "36px", base: "27px" }} 

@@ -1,79 +1,90 @@
-import { 
-  Box, 
-  Text, 
-  VStack, 
-  HStack, 
-  Flex, 
-  SimpleGrid, 
+import {
+  Box,
+  Text,
+  VStack,
+  HStack,
+  Flex,
+  SimpleGrid,
   Image,
-  useBreakpointValue
-} from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+  useBreakpointValue,
+} from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import onlineLogo from "./images/online.png";
 
-import onlineLogo from './images/online.png'; 
+// Функция для правильного склонения слова "игрок"
+const getPlayersWord = (count: number) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
 
-/* КОНФИГУРАЦИЯ СЕРВЕРОВ (Статичные данные) */
+  if (mod100 >= 11 && mod100 <= 14) {
+    return "игроков";
+  }
+  if (mod10 === 1) {
+    return "игрок";
+  }
+  if (mod10 >= 2 && mod10 <= 4) {
+    return "игрока";
+  }
+  return "игроков";
+};
 
 export const ServerOnlineBlock = () => {
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
   const SERVER_CONFIG = [
-    { 
-      id: 'sunset', 
-      name: 'SUNSET', 
-      desc: <>погодные явления, жажда{!isDesktop && <br />} воды и температура тела</>, 
-      color: "#ffcdff"
+    {
+      id: "sunset",
+      name: "SUNSET",
+      desc: <>Реалистичное выживание <br/> и динамичные события</>,
+      color: "255, 205, 255",
+      hoverColor: "255, 128, 255",
     },
-    { 
-      id: 'classic', 
-      name: 'CLASSIC', 
-      desc: <>свободный мир без правил, {!isDesktop && <br />} соревнования и торговля</>,  
-      color: "#ffe2c0"
+    {
+      id: "classic",
+      name: "CLASSIC",
+      desc: <>Выживание в свободном <br/> мире без лишних правил</>,
+      color: "255, 226, 192",
+      hoverColor: "255, 191, 64",
     },
-    { 
-      id: 'oceans', 
-      name: 'OCEANS', 
-      // Обрати внимание: нет кавычек, используются <> и </>
-      desc: <>развитие  в открытом море, {!isDesktop && <br />} жажда воды и температура</>, 
-      color: "#c0eded"
-    }
+    {
+      id: "oceans",
+      name: "OCEANS",
+      desc: <>Испытание в бесконечном океане и водные баталии</>,
+      color: "192, 237, 237",
+      hoverColor: "64, 217, 217",
+    },
   ];
-  // Изначально ставим всем серверам онлайн 0
+
   const [servers, setServers] = useState(
-    SERVER_CONFIG.map(config => ({ ...config, players: 0 }))
+    SERVER_CONFIG.map((config) => ({ ...config, players: 0 })),
   );
   const [totalOnline, setTotalOnline] = useState(0);
 
-  // Логика получения данных с бекенда
   useEffect(() => {
     const fetchOnline = () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // Таймаут 5 сек
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      fetch('https://api.revizemc.net/online', { signal: controller.signal })
-        .then(res => {
+      fetch("https://api.revizemc.net/online", { signal: controller.signal })
+        .then((res) => {
           if (!res.ok) throw new Error("Ошибка сервера");
           return res.json();
         })
-        .then(data => {
-          // data.total - общий онлайн со всех серверов
-          // data.servers - массив онлайна по режимам [{ id: 'SUNSET', players: 15 }, ...]
-          
+        .then((data) => {
           setTotalOnline(data.total);
-          
-          // Обновляем количество игроков в наших красивых карточках
-          setServers(prevServers => 
-            prevServers.map(server => {
-              // Ищем совпадение по ID, игнорируя регистр (SUNSET === sunset)
+          setServers((prevServers) =>
+            prevServers.map((server) => {
               const updatedData = data.servers.find(
-                (s: any) => s.id.toLowerCase() === server.id.toLowerCase()
+                (s: any) => s.id.toLowerCase() === server.id.toLowerCase(),
               );
-              return updatedData ? { ...server, players: updatedData.players } : server;
-            })
+              return updatedData
+                ? { ...server, players: updatedData.players }
+                : server;
+            }),
           );
         })
-        .catch(error => {
-          if (error.name !== 'AbortError') {
+        .catch((error) => {
+          if (error.name !== "AbortError") {
             console.error("Ошибка при получении онлайна:", error);
           }
         })
@@ -82,19 +93,13 @@ export const ServerOnlineBlock = () => {
         });
     };
 
-    // 1. Делаем первый запрос сразу при загрузке страницы
     fetchOnline();
-
-    // 2. Запускаем фоновое обновление каждые 10 секунд
     const intervalId = setInterval(fetchOnline, 10000);
-
-    // Очищаем таймер, если компонент удаляется с экрана
     return () => clearInterval(intervalId);
   }, []);
 
   return (
     <>
-      {/* ГЛОБАЛЬНАЯ CSS-АНИМАЦИЯ */}
       <style>
         {`
           @keyframes blink {
@@ -113,143 +118,111 @@ export const ServerOnlineBlock = () => {
         borderWidth={{ xl: "6px", base: "4px" }}
         borderRadius="25px"
         p={4}
-        mt={{xl: "30px", base: "15px"}} 
+        mt={{ xl: "30px", base: "15px" }}
         spacing={4}
         align="stretch"
         transition="all 0.45s ease-out"
       >
         {/* ШАПКА БЛОКА */}
-        <Flex 
-          w="full" 
-          justifyContent="space-between" 
-          alignItems="center" 
+        <Flex
+          w="full"
+          justifyContent="space-between"
+          alignItems="center"
           p="0px"
         >
-          {/* ЛЕВАЯ ЧАСТЬ: ЛОГОТИП И НАЗВАНИЕ */}
-          <HStack spacing={{ base: 2, xl: 3 }}>
-            <Box 
-              w={{ xl: "36px", base: "27px" }} 
+          <HStack spacing={3}>
+            <Box
+              w={{ xl: "36px", base: "27px" }}
               h={{ xl: "36px", base: "27px" }}
             >
-              <Image 
-                src={onlineLogo} 
-                alt="Онлайн" 
-                fit="fill" 
-                draggable={false} 
-                userSelect="none" 
-              />    
+              <Image
+                src={onlineLogo}
+                alt="Онлайн"
+                fit="fill"
+                draggable={false}
+                userSelect="none"
+              />
             </Box>
-            <Text 
-              fontSize={{ base: "xl", xl: "3xl" }} 
-              fontFamily="heading" 
-              color="#80BFFF" 
+            <Text
+              fontSize={{ base: "xl", xl: "3xl" }}
+              fontFamily="heading"
+              color="#80BFFF"
               lineHeight="1"
             >
-              НАШИ РЕЖИМЫ
+              НОВЫЕ РЕЖИМЫ
             </Text>
-          </HStack>
-
-          {/* ПРАВАЯ ЧАСТЬ: ОБЩИЙ ОНЛАЙН И ТОЧКА */}
-          <HStack spacing={2} alignItems="center">
-            <Text 
-              fontSize={{ base: "xl", xl: "3xl" }} 
-              fontFamily="heading" 
-              color="#80BFFF" 
-              lineHeight="1"
-              fontWeight="bold"
-            >
-              {totalOnline}
-            </Text>
-            <Box 
-              w="10px" 
-              h="10px" 
-              borderRadius="3px" 
-              bg="#80BFFF"
-              animation="blink 1.5s infinite"
-            />
           </HStack>
         </Flex>
 
         {/* СЕТКА РЕЖИМОВ */}
-        <SimpleGrid 
-          columns={{ base: 1, xl: 3 }} 
-          spacing={{ base: 4, xl: 6 }} 
+        <SimpleGrid
+          columns={{ base: 1, xl: 3 }}
+          spacing={{ base: 4, xl: 4 }}
           w="full"
         >
           {servers.map((server) => (
             <Flex
               key={server.id}
+              role="group"
               direction="column"
-              alignItems="center"
-              bg="transparent"
+              justifyContent="space-between" // Распределяет верхний блок и счетчик по краям
+              h="full" // Растягивает карточку на всю высоту ячейки грида
               border="solid"
-              borderColor={server.color}
+              borderColor={`rgb(${server.hoverColor})`}
               borderWidth={{ xl: "6px", base: "4px" }}
               borderRadius="20px"
-              p={{xl: 4, base: 2.5}}
+              p={{ xl: 4, base: 2.5 }}
               transition="all 0.45s ease-in-out"
+              _hover={{
+                borderColor: `rgb(${server.hoverColor})`,
+                bg: `rgba(${server.hoverColor}, 0.25)`,
+              }}
             >
-              
-              {/* ВЕРХНЯЯ СТРОКА: НАЗВАНИЕ И ОНЛАЙН */}
-              <Flex 
-                w="full" 
-                justifyContent="space-between" 
-                alignItems="center" 
-                mb={3}
-              >
-                <Text 
-                  color={server.color} 
-                  fontFamily="heading" 
-                  fontSize={{ base: "xl", xl: "2xl" }} 
-                  fontWeight="bold"
-                  lineHeight="1"
-                >
-                  {server.name}
-                </Text>
-                
-                <HStack 
-                  spacing={2} 
-                  alignItems="center"
-                >
-                  <Text 
-                    color={server.color}
-                    fontFamily="heading" 
-                    fontSize={{ base: "xl", xl: "2xl" }} 
+              <Box>
+                {/* НАЗВАНИЕ */}
+                <Flex w="full" mb={3}>
+                  <Text
+                    color={`rgb(${server.hoverColor})`}
+                    fontFamily="heading"
+                    fontSize={{ base: "xl", xl: "2xl" }}
                     fontWeight="bold"
                     lineHeight="1"
+                    _groupHover={{ color: `rgb(${server.hoverColor})` }}
+                    transition="all 0.45s ease-in-out"
                   >
-                    {server.players}
+                    {server.name}
                   </Text>
-                  
-                  {/* МИГАЮЩАЯ ТОЧКА */}
-                  <Box 
-                    w="10px" 
-                    h="10px" 
-                    borderRadius="3px" 
-                    bg={server.color}
-                    animation="blink 1.5s infinite"
-                  />
-                </HStack>
-              </Flex>
+                </Flex>
 
-              {/* НИЖНИЙ БЛОК: ОПИСАНИЕ */}
-              <Box 
-                w="full" 
-                display="flex" 
-                justifyContent="center"
-              >
-                <Text 
-                  w="full"
-                  color="white" 
-                  fontFamily="heading" 
-                  fontSize={{ base: "15px", xl: "lg" }} 
-                  textAlign="left"
-                  lineHeight="1"
-                >
-                  {server.desc}
-                </Text>
+                {/* ОПИСАНИЕ */}
+                <Box w="full" display="flex" mb={4}>
+                  <Text
+                    w="full"
+                    color="white"
+                    fontFamily="heading"
+                    fontSize={{ base: "15px", xl: "lg" }}
+                    textAlign="left"
+                    lineHeight="1"
+                  >
+                    {server.desc}
+                  </Text>
+                </Box>
               </Box>
 
+              {/* СЧЕТЧИК ИГРОКОВ (ВНИЗУ СПРАВА) */}
+              <Flex w="full" justifyContent="flex-end">
+                <Text
+                  color={`rgb(${server.hoverColor})`}
+                  fontFamily="heading"
+                  fontSize={{ base: "md", xl: "lg" }}
+                  fontWeight="bold"
+                  lineHeight="1"
+                  transition="all 0.45s ease-in-out"
+                  _groupHover={{ color: `rgb(${server.hoverColor})` }}
+                >
+                  {server.players} {getPlayersWord(server.players)}
+                </Text>
+              </Flex>
             </Flex>
           ))}
         </SimpleGrid>
