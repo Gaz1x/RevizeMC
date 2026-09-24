@@ -17,16 +17,15 @@ interface Latest {
   action: number;
 }
 
-export const LatestBlock = () => {
+export const LatestsBlock = () => {
   const [latests, setLatest] = useState<Latest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Выносим логику запроса в отдельную функцию
-    const fetchSponsors = () => {
+    const fetchLatests = () => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       fetch("https://api.revizemc.net/latest", { signal: controller.signal })
         .then((res) => {
@@ -35,7 +34,7 @@ export const LatestBlock = () => {
         })
         .then((data) => {
           setLatest(data);
-          setHasError(false); // Сбрасываем ошибку, если запрос прошел успешно
+          setHasError(false);
           setIsLoading(false);
         })
         .catch((error) => {
@@ -50,14 +49,10 @@ export const LatestBlock = () => {
         });
     };
 
-    // 1. Делаем первый запрос сразу при загрузке страницы
-    fetchSponsors();
+    fetchLatests();
 
-    // 2. Запускаем таймер, который будет повторять запрос каждые 15 секунд (15000 мс)
-    const intervalId = setInterval(fetchSponsors, 10000);
+    const intervalId = setInterval(fetchLatests, 10000);
 
-    // 3. Обязательно очищаем таймер, если пользователь уйдет на другую страницу,
-    // чтобы запросы не продолжали лететь в фоне
     return () => clearInterval(intervalId);
   }, []);
 
@@ -72,9 +67,7 @@ export const LatestBlock = () => {
       p={4}
       mt={{ xl: "30px", base: "15px" }}
       align="stretch"
-      transition="all 0.45s ease-out"
     >
-      {/* ШАПКА БЛОКА */}
       <HStack alignItems="center" p="0px" spacing={3}>
         <Box w={{ xl: "36px", base: "27px" }} h={{ xl: "36px", base: "27px" }}>
           <Image
@@ -89,13 +82,12 @@ export const LatestBlock = () => {
           fontSize={{ base: "xl", xl: "3xl" }}
           fontFamily="heading"
           color="#80ff80"
-          lineHeight="1"
+          lineHeight="1.2"
         >
           ПОСЛЕДНИЕ ПОКУПКИ
         </Text>
       </HStack>
 
-      {/* ЛОГИКА ОТОБРАЖЕНИЯ (Загрузка / Ошибка или Пустота / Список) */}
       {isLoading ? (
         <Center w="full" h="150px">
           <Spinner color="#80ff80" size="xl" thickness="4px" />
@@ -129,21 +121,10 @@ export const LatestBlock = () => {
                 opacity={1 - index * 0.05}
               >
                 <HStack spacing={4}>
-                  {/* <Text 
-                    color="rgb(128, 255, 128)" 
-                    fontFamily="heading" 
-                    fontWeight="bold" 
-                    fontSize={{ base: "md", xl: "lg" }}
-                    w="28px" 
-                    textAlign="center"
-                  >
-                    {index + 1}
-                  </Text> */}
                   <Box w="10px" h="10px" borderRadius="3px" bg="#80ff80" />
                   <Text
                     color="white"
                     fontFamily="'DaysSansBlackCaps', sans-serif !important"
-                    // letterSpacing="1px"
                     lineHeight="0.65"
                     align="center"
                     fontSize={{ base: "md", xl: "lg" }}
@@ -155,7 +136,6 @@ export const LatestBlock = () => {
                 <Text
                   color="#80ff80"
                   fontFamily="heading"
-                  fontWeight="bold"
                   fontSize={{ base: "md", xl: "lg" }}
                 >
                   {latest.action} ТОКЕНОВ

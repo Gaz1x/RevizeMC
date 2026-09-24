@@ -42,7 +42,6 @@ export const Navbar = () => {
       w="full"
       maxW={{ xl: "1300px", base: "370px" }}
     >
-      {/* ВЕРХНИЙ РЯД */}
       <Flex
         direction="row"
         alignItems="center"
@@ -51,7 +50,6 @@ export const Navbar = () => {
         mt={{ xl: "30px", base: "15px" }}
         w="full"
       >
-        {/* ГРУППА 1: Логотип + Название (ЛЕВЫЙ КРАЙ) */}
         <Flex
           direction="row"
           alignItems="center"
@@ -59,7 +57,6 @@ export const Navbar = () => {
           flex={{ xl: 1 }}
           justify={{ base: "center", xl: "flex-start" }}
         >
-          {/* Логотип */}
           <Box
             w={{ xl: "64px", base: "45px" }}
             h={{ xl: "64px", base: "45px" }}
@@ -73,7 +70,6 @@ export const Navbar = () => {
             />
           </Box>
 
-          {/* Блок копирования IP */}
           <Container
             as="nav"
             role="group"
@@ -91,7 +87,7 @@ export const Navbar = () => {
             cursor={isDesktop ? "pointer" : "default"}
             pointerEvents={isDesktop ? "auto" : "none"}
             onClick={handleCopy}
-            transition="all 0.2s ease-in-out"
+            transition="all 0.3s ease-in-out"
             sx={{
               "@media (hover: hover) and (pointer: fine)": {
                 "&:hover": {
@@ -104,7 +100,6 @@ export const Navbar = () => {
               },
             }}
           >
-            {/* Текст 1: REVIZEMC.NET */}
             <Text
               position="absolute"
               transform={copied ? "scale(0.7)" : "scale(1)"}
@@ -120,7 +115,6 @@ export const Navbar = () => {
               REVIZEMC.NET
             </Text>
 
-            {/* Текст 2: СКОПИРОВАНО */}
             <Text
               position="absolute"
               transform={copied ? "scale(1)" : "scale(0.7)"}
@@ -137,7 +131,6 @@ export const Navbar = () => {
           </Container>
         </Flex>
 
-        {/* ГРУППА 2: СЛОГАН (СТРОГО ПО ЦЕНТРУ) */}
         <Flex
           flex={{ xl: 1 }}
           justify="center"
@@ -156,7 +149,6 @@ export const Navbar = () => {
           >
             <Text
               fontSize="30px"
-              fontWeight="bold"
               bgColor="#80bFFF"
               bgClip="text"
               fontFamily="body"
@@ -167,7 +159,6 @@ export const Navbar = () => {
           </Box>
         </Flex>
 
-        {/* ГРУППА 3: КНОПКИ СОЦСЕТЕЙ (ПРАВЫЙ КРАЙ) */}
         <Flex
           direction="row"
           gap={{ xl: 3, base: 6 }}
@@ -175,7 +166,6 @@ export const Navbar = () => {
           justify={{ base: "center", xl: "flex-end" }}
           display={{ base: "none", xl: "flex" }}
         >
-          {/* Кнопка DISCORD */}
           <Button
             as="a"
             href="https://discord.gg/SJpQDQcJvG"
@@ -188,9 +178,8 @@ export const Navbar = () => {
             borderWidth={{ xl: "6px", base: "4px" }}
             borderRadius={{ xl: "14px", base: "12px" }}
             fontFamily="heading"
-            fontWeight="bold"
             fontSize={{ base: "14px", xl: "24px" }}
-            transition="all 0.2s ease-out"
+            transition="all 0.3s ease-out"
             cursor="pointer"
             _hover={{ transform: "scale(0.96)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}
@@ -198,7 +187,6 @@ export const Navbar = () => {
             DISCORD
           </Button>
 
-          {/* Кнопка TELEGRAM */}
           <Button
             as="a"
             href="https://t.me/revizemc"
@@ -211,9 +199,8 @@ export const Navbar = () => {
             borderWidth={{ xl: "6px", base: "4px" }}
             borderRadius={{ xl: "14px", base: "12px" }}
             fontFamily="heading"
-            fontWeight="bold"
             fontSize={{ base: "14px", xl: "24px" }}
-            transition="all 0.2s ease-out"
+            transition="all 0.3s ease-out"
             cursor="pointer"
             _hover={{ transform: "scale(0.96)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}

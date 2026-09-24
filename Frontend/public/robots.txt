@@ -1,14 +1,6 @@
-# Общие правила для всех поисковых роботов
 User-agent: *
-Disallow: /api/
-Disallow: /admin/
-Disallow: /private/
-Allow: /
-
-User-agent: Yandex
-Disallow: /api/
-Disallow: /admin/
-Allow: /
-Host: https://www.revizemc.net
+Disallow: /terms-of-service.pdf
+Disallow: /privacy-policy.pdf
+Disallow: /rules
 
 Sitemap: https://www.revizemc.net/sitemap.xml

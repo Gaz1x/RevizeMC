@@ -24,9 +24,8 @@ export const SupportBlock = () => {
       mt="15px"
       gap={4}
       justify="space-between"
-      transition="all 0.45s ease-out"
+      transition="all 0.3s ease-out"
     >
-      {/* ЛЕВАЯ ЧАСТЬ: ИКОНКА И ЗАГОЛОВОК */}
       <HStack alignItems="center" p="0px">
         <Box w={{ xl: "36px", base: "27px" }} h={{ xl: "36px", base: "27px" }}>
           <Image
@@ -48,14 +47,12 @@ export const SupportBlock = () => {
         </Text>
       </HStack>
 
-      {/* ПРАВАЯ ЧАСТЬ: СЕТКА КНОПОК */}
       <SimpleGrid
         columns={{ base: 1, xl: 2 }}
         spacing={4}
         w="full"
         maxW="1300px"
       >
-        {/* КНОПКА DISCORD */}
         <Button
           as="a"
           href="https://discord.gg/SJpQDQcJvG"
@@ -68,9 +65,8 @@ export const SupportBlock = () => {
           border="#80BFFF solid"
           borderWidth={{ xl: "6px", base: "4px" }}
           fontFamily="heading"
-          fontWeight="bold"
           fontSize="lg"
-          transition="all 0.2s ease-out"
+          transition="all 0.3s ease-out"
           cursor="pointer"
           _hover={{
             transform: "scale(0.96)",
@@ -83,7 +79,6 @@ export const SupportBlock = () => {
           DISCORD
         </Button>
 
-        {/* КНОПКА TELEGRAM */}
         <Button
           as="a"
           href="https://t.me/revizemc"
@@ -96,9 +91,8 @@ export const SupportBlock = () => {
           border="#80BFFF solid"
           borderWidth={{ xl: "6px", base: "4px" }}
           fontFamily="heading"
-          fontWeight="bold"
           fontSize="lg"
-          transition="all 0.2s ease-out"
+          transition="all 0.3s ease-out"
           cursor="pointer"
           _hover={{
             transform: "scale(0.96)",

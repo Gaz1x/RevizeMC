@@ -1,13 +1,13 @@
 import { ChakraProvider, Container, Box, Flex } from "@chakra-ui/react";
 
 import { Navbar } from "./components/Navbar";
-import { BuyingZone } from "./modules/BuyingZone/BuyingZone";
-import { LatestBlock } from "./modules/SponsorBlock/LatestBlock";
-import { RulesBlock } from "./modules/RulesBlock/RulesBlock";
+import { TokenBlock } from "./modules/TokenBlock/TokenBlock";
+import { LatestsBlock } from "./modules/LatestsBlock/LatestsBlock";
+import { SocialBlock } from "./modules/SocialBlock/SocialBlock";
 import { MediaBlock } from "./modules/MediaBlock/MediaBlock";
-// import { SupportBlock } from './modules/SupportBlock/SupportBlock';
-import { ServerOnlineBlock } from "./modules/ServerOnlineBlock/ServerOnlineBlock";
+import { ServerBlock } from "./modules/ServerBlock/ServerBlock";
 import { Footer } from "./components/Footer";
+import { CreatorCredits } from "./components/CreatorsCredits";
 
 import theme from "./theme";
 import "./assets/dayssansblack.css";
@@ -15,10 +15,8 @@ import "./assets/dayssansblack.css";
 function App() {
   return (
     <ChakraProvider theme={theme}>
-      {/* ФОНОВОЕ ПОКРЫТИЕ */}
       <Box position="fixed" top={0} left={0} right={0} bottom={0} zIndex={-1} />
 
-      {/* ГЛАВНЫЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ */}
       <Container
         minW="100%"
         minH="100dvh"
@@ -30,47 +28,49 @@ function App() {
       >
         <Navbar />
 
-        <ServerOnlineBlock />
-
-        {/* 
-          ВЕРХНИЙ РЯД БЛОКОВ 
-          Chakra UI сама выстроит их в колонку на телефонах и в строку на ПК 
-        */}
         <Flex
           w="full"
-          maxW={{ xl: "1300px", base: "370px" }}
+          maxW={{ base: "370px", xl: "1300px" }}
+          direction="column"
+        >
+          <Box w="full" order={{ xl: "2", base: "1" }}>
+            <ServerBlock />
+          </Box>
+
+          <Flex
+            w="full"
+            direction={{ base: "column", xl: "row" }}
+            justifyContent="space-between"
+            transition="all 0.45s ease-out"
+            order={{ xl: "1", base: "2" }}
+          >
+            <Box
+              flex="1"
+              display="flex"
+              w="full"
+              maxW={{ base: "370px", xl: "635px" }}
+            >
+              <TokenBlock />
+            </Box>
+
+            <Box display={{ base: "none", xl: "flex" }} w="full" maxW="635px">
+              <LatestsBlock />
+            </Box>
+          </Flex>
+        </Flex>
+        <Flex
+          w="full"
+          maxW={{ base: "370px", xl: "1300px" }}
           direction={{ base: "column", xl: "row" }}
           justifyContent="space-between"
           transition="all 0.45s ease-out"
         >
-          {/* ЛЕВАЯ КОЛОНКА: Зона покупки */}
-          <Box
-            flex="1"
-            display="flex"
-            w="full"
-            maxW={{ xl: "635px", base: "370px" }}
-          >
-            <BuyingZone />
-          </Box>
-
-          {/* ПРАВАЯ КОЛОНКА: Спонсоры (Скрыты на мобильных устройствах) */}
-          <Box
-            display={{ base: "none", xl: "flex" }}
-            // display="flex"
-            w="full"
-            maxW={{ xl: "635px", base: "370px" }}
-          >
-            <LatestBlock />
-            {/* <RulesBlock /> */}
-          </Box>
+          <SocialBlock />
+          <MediaBlock />
         </Flex>
 
-        {/* ОСТАЛЬНЫЕ БЛОКИ */}
-        {/* <ServerOnlineBlock /> */}
-        {/* <RulesBlock /> */}
-        {/* <SupportBlock /> */}
-        <MediaBlock />
         <Footer />
+        <CreatorCredits />
       </Container>
     </ChakraProvider>
   );

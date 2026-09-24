@@ -24,8 +24,7 @@ const TOKEN_OPTIONS = [
   200000, 300000, 400000, 500000,
 ];
 
-export const BuyingZone = () => {
-  /* СОСТОЯНИЯ КОМПОНЕНТА */
+export const TokenBlock = () => {
   const [tokens, setTokens] = useState<number>(1000);
 
   const [smoothValue, setSmoothValue] = useState<number>(
@@ -52,7 +51,6 @@ export const BuyingZone = () => {
 
   const rubles = Math.max(0, tokens / 10);
 
-  /* ЛОГИКА ВАЛИДАЦИИ И ОБРАБОТЧИКИ */
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors((prev) => ({ ...prev, username: false }));
     const value = e.target.value;
@@ -65,7 +63,7 @@ export const BuyingZone = () => {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors((prev) => ({ ...prev, email: false }));
-    // Убрали всю сложную логику, просто сохраняем введенный текст (без пробелов)
+
     setEmail(e.target.value.trim());
   };
 
@@ -74,14 +72,13 @@ export const BuyingZone = () => {
     setIsProcessing(true);
 
     const isUsernameLocalError = username.length < 3;
-    // Легкая локальная проверка: есть ли текст, собака и точка после нее
+
     const isEmailLocalError = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isDocumentsError = !documentsAccepted;
 
     let isUsernameServerError = false;
     let isEmailServerError = false;
 
-    // Шаг 1.1: Проверяем ник на сервере
     if (!isUsernameLocalError) {
       try {
         const checkRes = await fetch(
@@ -101,10 +98,8 @@ export const BuyingZone = () => {
       }
     }
 
-    // Шаг 1.2: Глубокая проверка почты на сервере (только если она прошла легкую проверку)
     if (!isEmailLocalError) {
       try {
-        // Укажи здесь правильный эндпоинт своего бекенда для проверки почты
         const emailRes = await fetch("https://api.revizemc.net/email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -123,7 +118,6 @@ export const BuyingZone = () => {
     const finalEmailError = isEmailLocalError || isEmailServerError;
     const finalUsernameError = isUsernameLocalError || isUsernameServerError;
 
-    // Шаг 2: Если есть ошибка - мигаем красным
     if (finalUsernameError || finalEmailError || isDocumentsError) {
       setSubmitErrors({
         username: finalUsernameError,
@@ -145,7 +139,6 @@ export const BuyingZone = () => {
       return;
     }
 
-    // Шаг 3: Оплата
     try {
       const purchaseRes = await fetch("https://api.revizemc.net/purchase", {
         method: "POST",
@@ -208,7 +201,6 @@ export const BuyingZone = () => {
     }
   };
 
-  /* СТИЛИ */
   const getCheckboxStyles = (hasError: boolean) => ({
     ".chakra-checkbox__control": {
       bg: hasError ? "#592828" : "#285928",
@@ -221,7 +213,6 @@ export const BuyingZone = () => {
         bg: "#80ff80",
         borderColor: "#80ff80",
         color: "transparent",
-        transform: "scale(1.2)",
       },
       _focus: {
         boxShadow: "none",
@@ -253,10 +244,8 @@ export const BuyingZone = () => {
       mt={{ xl: "30px", base: "15px" }}
       spacing={4}
       align="stretch"
-      transition="all 0.45s ease-out"
       sx={{ WebkitTapHighlightColor: "transparent" }}
     >
-      {/* ШАПКА БЛОКА */}
       <HStack alignItems="center" p="0px" spacing={3}>
         <Box w={{ xl: "36px", base: "27px" }} h={{ xl: "36px", base: "27px" }}>
           <Image
@@ -278,7 +267,6 @@ export const BuyingZone = () => {
       </HStack>
 
       <Flex direction={{ base: "column", xl: "row" }} gap={4} w="full">
-        {/* ЛЕВАЯ КОЛОНКА (Инпуты) */}
         <VStack flex="1" align="flex-start" spacing={3}>
           <Input
             bg={submitErrors.username ? "#592828" : "#285928"}
@@ -334,7 +322,6 @@ export const BuyingZone = () => {
           />
         </VStack>
 
-        {/* ПРАВАЯ КОЛОНКА (Кнопка оплаты и соглашения) */}
         <VStack flex="1" align="flex-start" spacing={3}>
           <Button
             bg="#80ff80"
@@ -345,13 +332,11 @@ export const BuyingZone = () => {
             borderColor="#80ff80"
             borderWidth={{ xl: "6px", base: "4px" }}
             fontFamily="heading"
-            fontWeight="bold"
             fontSize="lg"
             w="full"
-            transition="all 0.2s ease-out"
+            transition="all 0.3s ease-out"
             cursor="pointer"
             isLoading={isProcessing}
-            loadingText="ОЖИДАНИЕ..."
             onClick={handlePayClick}
             _hover={{
               transform: "scale(0.96)",
@@ -363,13 +348,11 @@ export const BuyingZone = () => {
             {rubles.toLocaleString("ru-RU")} рублей
           </Button>
 
-          {/* ЕДИНЫЙ БЛОК СОГЛАШЕНИЙ */}
           <VStack
             spacing={{ xl: "5.5px", base: "10px" }}
             alignItems="flex-start"
             w="full"
           >
-            {/* 1 строка: Чекбокс и основной текст */}
             <HStack spacing={3}>
               <Flex w="18px" justify="center" align="center">
                 <Checkbox
@@ -388,8 +371,6 @@ export const BuyingZone = () => {
                 color="white"
                 fontSize={{ xl: "11px", base: "12.9px" }}
                 fontFamily="body"
-                lineHeight="1"
-                mt="2px"
                 cursor="pointer"
               >
                 ПРИНИМАЮ УСЛОВИЯ ДОКУМЕНТОВ:
@@ -397,10 +378,16 @@ export const BuyingZone = () => {
             </HStack>
 
             <VStack alignItems="flex-start" spacing={2}>
-              {/* 3 строка: Точка и Пользовательское соглашение */}
               <HStack spacing={3}>
                 <Flex w="18px" justify="center" align="center">
-                  <Box display={"none"} w="6px" h="6px" />
+                  <Box
+                    display={"none"}
+                    w="6px"
+                    h="6px"
+                    borderRadius="1.5px"
+                    bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"}
+                    transition="all 0.3s ease-in-out"
+                  />
                 </Flex>
                 <Text
                   as="span"
@@ -409,7 +396,7 @@ export const BuyingZone = () => {
                   fontSize={{ xl: "11.4px", base: "13.35px" }}
                   fontFamily="body"
                   lineHeight="1"
-                  transition="all 0.3s ease-in-out"
+                  transition="all 0.3s ease-out"
                   textAlign="justify"
                   cursor="pointer"
                   onClick={(e) => {
@@ -429,10 +416,16 @@ export const BuyingZone = () => {
                 </Text>
               </HStack>
 
-              {/* 2 строка: Точка и Политика конфиденциальности */}
               <HStack spacing={3}>
                 <Flex w="18px" justify="center" align="center">
-                  <Box display={"none"} w="6px" h="6px" />
+                  <Box
+                    display={"none"}
+                    w="6px"
+                    h="6px"
+                    borderRadius="1.5px"
+                    bgColor={submitErrors.documents ? "#FF8080" : "#80ff80"}
+                    transition="all 0.3s ease-in-out"
+                  />
                 </Flex>
                 <Text
                   as="span"
@@ -442,7 +435,7 @@ export const BuyingZone = () => {
                   fontFamily="body"
                   lineHeight="1"
                   textAlign="justify"
-                  transition="all 0.3s ease-in-out"
+                  transition="all 0.3s ease-out"
                   cursor="pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -465,7 +458,6 @@ export const BuyingZone = () => {
         </VStack>
       </Flex>
 
-      {/* БЛОК СЛАЙДЕРА И КНОПОК БЫСТРОГО ВЫБОРА */}
       <Flex direction="column" w="full" mt="-5px">
         <Box
           order={{ base: 2, xl: 1 }}
@@ -509,9 +501,9 @@ export const BuyingZone = () => {
               <SliderFilledTrack
                 ml={{ base: "-5px", xl: "-10px" }}
                 bg="white"
-                borderLeftRadius="2px"
+                borderLeftRadius="4px"
                 borderRightRadius="0px"
-                transition={isDragging ? "none" : "width 0.2s ease-out"}
+                transition={isDragging ? "none" : "width 0.3s ease-out"}
               />
             </SliderTrack>
             <SliderThumb
@@ -521,7 +513,7 @@ export const BuyingZone = () => {
               border="none"
               outline="none"
               boxShadow="none !important"
-              transition={isDragging ? "none" : "left 0.2s ease-out"}
+              transition={isDragging ? "none" : "left 0.3s ease-out"}
               _focus={{
                 boxShadow: "none !important",
                 outline: "none !important",
@@ -542,9 +534,9 @@ export const BuyingZone = () => {
               <Box
                 w="100%"
                 h="100%"
-                borderRadius={{ base: "4px", xl: "6px" }}
+                borderRadius={"5px"}
                 bg="#80ff80"
-                transition="all 0.15s ease-in-out"
+                transition="all 0.3s ease-in-out"
                 boxShadow="none !important"
                 outline="none !important"
                 _groupHover={{
@@ -560,7 +552,6 @@ export const BuyingZone = () => {
           </Slider>
         </Box>
 
-        {/* СЕТКА ИЗ 15 КНОПОК */}
         <SimpleGrid
           order={{ base: 1, xl: 2 }}
           columns={{ base: 5, xl: 5 }}
@@ -587,7 +578,7 @@ export const BuyingZone = () => {
                 fontFamily="heading"
                 fontSize={{ xl: "16px", base: "10px" }}
                 p={0}
-                transition="all 0.2s ease-out"
+                transition="all 0.3s ease-out"
                 onClick={() => handleQuickSelect(val)}
                 _hover={{
                   transform: "scale(0.92)",
