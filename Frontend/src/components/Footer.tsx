@@ -5,7 +5,7 @@ export const Footer = () => {
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
   const linkStyles = {
-    color: "#ffffff80",
+    color: "rgba(255,255,255, 0.5)",
     fontFamily: "heading",
     fontWeight: "bold",
     fontSize: { base: "xs", xl: "sm" },
@@ -30,7 +30,6 @@ export const Footer = () => {
       py={4}
       px={4}
       mt={{ xl: "30px", base: "15px" }}
-      // mb={{ xl: "30px", base: "15px" }}
       direction={{ base: "column", xl: "row" }}
       justifyContent="space-between"
       alignItems="center"

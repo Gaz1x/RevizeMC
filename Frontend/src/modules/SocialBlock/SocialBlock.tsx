@@ -25,7 +25,7 @@ const SOCIAL_LINKS = [
 const buttonStyles = {
   w: "full",
   flexShrink: 0,
-  h: { base: "45px", xl: "54px" },
+  h: "50px",
   borderRadius: BORDER_RADIUS,
   bg: MAIN_COLOR,
   color: BUTTON_TEXT_COLOR,
@@ -57,7 +57,7 @@ export const SocialBlock = () => {
       borderColor={MAIN_COLOR}
       borderWidth={BORDER_WIDTH}
       borderRadius="25px"
-      bgGradient="linear(to-t, transparent, rgba(255, 128, 128, 0.15))"
+      bgGradient="linear(to-t, transparent, rgba(255, 255, 128, 0.15))"
     >
       <HStack spacing={3}>
         <Image

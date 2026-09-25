@@ -115,7 +115,7 @@ export const MediaBlock = () => {
         <Button
           w="full"
           flexShrink={0}
-          h={{ xl: "54px", base: "45px" }}
+          h="50px"
           borderRadius={BORDER_RADIUS}
           bg={MAIN_COLOR}
           color="#592828"

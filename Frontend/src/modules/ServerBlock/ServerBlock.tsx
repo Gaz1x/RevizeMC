@@ -1,106 +1,96 @@
-import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Flex,
-  SimpleGrid,
-  Image,
-  useBreakpointValue,
-} from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { Box, Text, Flex, SimpleGrid } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+
+const SERVER_CONFIG = [
+  {
+    id: "sunset",
+    name: "SUNSET",
+    desc: (
+      <>
+        Реалистичное выживание <br /> с динамичными ивентами
+      </>
+    ),
+    hoverColor: "255, 128, 255",
+  },
+  {
+    id: "classic",
+    name: "CLASSIC",
+    desc: (
+      <>
+        Выживание в свободном <br /> мире без лишних правил
+      </>
+    ),
+    hoverColor: "255, 191, 64",
+  },
+  {
+    id: "oceans",
+    name: "OCEANS",
+    desc: <>Выживание в бесконечном океане с битвами за плоты</>,
+    hoverColor: "64, 217, 217",
+  },
+];
 
 const getPlayersWord = (count: number) => {
   const mod10 = count % 10;
   const mod100 = count % 100;
 
-  if (mod100 >= 11 && mod100 <= 14) {
-    return "игроков";
-  }
-  if (mod10 === 1) {
-    return "игрок";
-  }
-  if (mod10 >= 2 && mod10 <= 4) {
-    return "игрока";
-  }
+  if (mod100 >= 11 && mod100 <= 14) return "игроков";
+  if (mod10 === 1) return "игрок";
+  if (mod10 >= 2 && mod10 <= 4) return "игрока";
+
   return "игроков";
 };
 
 export const ServerBlock = () => {
-  const isDesktop = useBreakpointValue({ base: false, xl: true });
-
-  const SERVER_CONFIG = [
-    {
-      id: "sunset",
-      name: "SUNSET",
-      desc: (
-        <>
-          Реалистичное выживание <br /> с динамичными ивентами
-        </>
-      ),
-      color: "255, 205, 255",
-      hoverColor: "255, 128, 255",
-    },
-    {
-      id: "classic",
-      name: "CLASSIC",
-      desc: (
-        <>
-          Выживание в свободном <br /> мире без лишних правил
-        </>
-      ),
-      color: "255, 226, 192",
-      hoverColor: "255, 191, 64",
-    },
-    {
-      id: "oceans",
-      name: "OCEANS",
-      desc: <>Выживание в бесконечном океане с битвами за плоты</>,
-      color: "192, 237, 237",
-      hoverColor: "64, 217, 217",
-    },
-  ];
-
   const [servers, setServers] = useState(
-    SERVER_CONFIG.map((config) => ({ ...config, players: 0 })),
+    SERVER_CONFIG.map((server) => ({ ...server, players: 0 })),
   );
+
   const [totalOnline, setTotalOnline] = useState(0);
 
   useEffect(() => {
-    const fetchOnline = () => {
+    const fetchOnline = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      fetch("https://api.revizemc.net/online", { signal: controller.signal })
-        .then((res) => {
-          if (!res.ok) throw new Error("Ошибка сервера");
-          return res.json();
-        })
-        .then((data) => {
-          setTotalOnline(data.total);
-          setServers((prevServers) =>
-            prevServers.map((server) => {
-              const updatedData = data.servers.find(
-                (s: any) => s.id.toLowerCase() === server.id.toLowerCase(),
-              );
-              return updatedData
-                ? { ...server, players: updatedData.players }
-                : server;
-            }),
-          );
-        })
-        .catch((error) => {
-          if (error.name !== "AbortError") {
-            console.error("Ошибка при получении онлайна:", error);
-          }
-        })
-        .finally(() => {
-          clearTimeout(timeoutId);
+      try {
+        const response = await fetch("https://api.revizemc.net/online", {
+          signal: controller.signal,
         });
+
+        if (!response.ok) {
+          throw new Error("Ошибка сервера");
+        }
+
+        const data = await response.json();
+
+        setTotalOnline(data.total);
+
+        setServers((prevServers) =>
+          prevServers.map((server) => {
+            const updatedServer = data.servers.find(
+              (item: { id: string }) =>
+                item.id.toLowerCase() === server.id.toLowerCase(),
+            );
+
+            return updatedServer
+              ? { ...server, players: updatedServer.players }
+              : server;
+          }),
+        );
+      } catch (error) {
+        if (error instanceof Error && error.name !== "AbortError") {
+          console.error("Ошибка при получении онлайна:", error);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
     };
 
     fetchOnline();
+
     const intervalId = setInterval(fetchOnline, 10000);
+
     return () => clearInterval(intervalId);
   }, []);
 
@@ -120,44 +110,72 @@ export const ServerBlock = () => {
         columns={{ base: 1, xl: 3 }}
         spacing={{ base: 4, xl: 4 }}
         w="full"
-        maxW={{ xl: "1300px", base: "370px" }}
-        mt={{ xl: "30px", base: "15px" }}
+        maxW={{ base: "370px", xl: "1300px" }}
+        mt={{ base: "15px", xl: "30px" }}
         mx="auto"
-        transition="all 0.45s ease-out"
+        transition="all 0.3s ease-out"
       >
-        {servers.map((server) => (
-          <Flex
-            key={server.id}
-            role="group"
-            direction="column"
-            justifyContent="space-between"
-            h="full"
-            border="solid"
-            borderColor={`rgb(${server.hoverColor})`}
-            borderWidth={{ xl: "6px", base: "4px" }}
-            borderRadius="20px"
-            p={{ xl: 4, base: 2.5 }}
-            transition="all 0.3s ease-in-out"
-            _hover={{
-              borderColor: `rgb(${server.hoverColor})`,
-              bg: `rgba(${server.hoverColor}, 0.25)`,
-            }}
-          >
-            <Box>
-              <Flex w="full" mb={3}>
+        {servers.map((server) => {
+          const color = `rgb(${server.hoverColor})`;
+
+          return (
+            <Flex
+              key={server.id}
+              role="group"
+              position="relative"
+              overflow="hidden"
+              direction="column"
+              justifyContent="space-between"
+              h="full"
+              border="solid"
+              borderColor={color}
+              borderWidth={{ base: "4px", xl: "6px" }}
+              borderRadius="20px"
+              p={{ base: 2.5, xl: 4 }}
+              transition="border-color 0.3s ease-in-out"
+              _before={{
+                content: '""',
+                position: "absolute",
+                inset: "0px",
+                zIndex: 0,
+                pointerEvents: "none",
+                borderRadius: "10px",
+                bgGradient: `linear(to-t, transparent, rgba(${server.hoverColor}, 0.15))`,
+                opacity: 1,
+                transition: "opacity 0.3s ease-in-out",
+              }}
+
+              _after={{
+                content: '""',
+                position: "absolute",
+                inset: "0px",
+                zIndex: 0,
+                pointerEvents: "none",
+                borderRadius: "10px",
+                bg: `rgb(${server.hoverColor})`,
+                opacity: 0,
+                transition: "opacity 0.3s ease-in-out",
+              }}
+
+              _hover={{
+                borderColor: color,
+                _before: { opacity: 0 },
+                _after: { opacity: 0.25 },
+              }}
+            >
+              <Box position="relative" zIndex={1}>
                 <Text
-                  color={`rgb(${server.hoverColor})`}
+                  color={color}
                   fontFamily="heading"
                   fontSize={{ base: "xl", xl: "2xl" }}
                   lineHeight="1.2"
-                  _groupHover={{ color: `rgb(${server.hoverColor})` }}
-                  transition="all 0.3s ease-in-out"
+                  mb={3}
+                  transition="color 0.3s ease-in-out"
+                  _groupHover={{ color }}
                 >
                   {server.name}
                 </Text>
-              </Flex>
 
-              <Box w="full" display="flex" mb={4}>
                 <Text
                   w="full"
                   color="white"
@@ -165,26 +183,29 @@ export const ServerBlock = () => {
                   fontSize={{ base: "17px", xl: "lg" }}
                   textAlign="left"
                   lineHeight="1.2"
+                  mb={4}
                 >
                   {server.desc}
                 </Text>
               </Box>
-            </Box>
 
-            <Flex w="full" justifyContent="flex-end">
               <Text
-                color={`rgb(${server.hoverColor})`}
+                position="relative"
+                zIndex={1}
+                w="full"
+                color={color}
                 fontFamily="heading"
                 fontSize={{ base: "xl", xl: "lg" }}
                 lineHeight="1"
-                transition="all 0.3s ease-in-out"
-                _groupHover={{ color: `rgb(${server.hoverColor})` }}
+                textAlign="right"
+                transition="color 0.3s ease-in-out"
+                _groupHover={{ color }}
               >
                 {server.players} {getPlayersWord(server.players)}
               </Text>
             </Flex>
-          </Flex>
-        ))}
+          );
+        })}
       </SimpleGrid>
     </>
   );

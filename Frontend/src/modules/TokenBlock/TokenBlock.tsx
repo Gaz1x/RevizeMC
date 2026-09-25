@@ -377,7 +377,7 @@ export const TokenBlock = () => {
               </Text>
             </HStack>
 
-            <VStack alignItems="flex-start" spacing={2}>
+            <VStack alignItems="flex-start" spacing={2} mt={{xl: "-2px", base: "-7px"}}>
               <HStack spacing={3}>
                 <Flex w="18px" justify="center" align="center">
                   <Box

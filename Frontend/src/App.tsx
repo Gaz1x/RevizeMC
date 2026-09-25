@@ -2,12 +2,12 @@ import { ChakraProvider, Container, Box, Flex } from "@chakra-ui/react";
 
 import { Navbar } from "./components/Navbar";
 import { TokenBlock } from "./modules/TokenBlock/TokenBlock";
-import { LatestsBlock } from "./modules/LatestsBlock/LatestsBlock";
+import { LatestBlock } from "./modules/LatestBlock/LatestBlock";
 import { SocialBlock } from "./modules/SocialBlock/SocialBlock";
 import { MediaBlock } from "./modules/MediaBlock/MediaBlock";
 import { ServerBlock } from "./modules/ServerBlock/ServerBlock";
 import { Footer } from "./components/Footer";
-import { CreatorCredits } from "./components/CreatorsCredits";
+import { Credits } from "./components/Credits";
 
 import theme from "./theme";
 import "./assets/dayssansblack.css";
@@ -54,7 +54,7 @@ function App() {
             </Box>
 
             <Box display={{ base: "none", xl: "flex" }} w="full" maxW="635px">
-              <LatestsBlock />
+              <LatestBlock />
             </Box>
           </Flex>
         </Flex>
@@ -70,7 +70,7 @@ function App() {
         </Flex>
 
         <Footer />
-        <CreatorCredits />
+        <Credits />
       </Container>
     </ChakraProvider>
   );
