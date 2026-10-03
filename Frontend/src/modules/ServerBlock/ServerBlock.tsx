@@ -108,7 +108,7 @@ export const ServerBlock = () => {
 
       <SimpleGrid
         columns={{ base: 1, xl: 3 }}
-        spacing={{ base: 4, xl: 4 }}
+        spacing={{ base: "15px", xl: "30px" }}
         w="full"
         maxW={{ base: "370px", xl: "1300px" }}
         mt={{ base: "15px", xl: "30px" }}

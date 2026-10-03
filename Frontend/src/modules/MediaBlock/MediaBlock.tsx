@@ -30,13 +30,13 @@ export const MediaBlock = () => {
       align="stretch"
       w="full"
       maxW={{ xl: "635px", base: "370px" }}
-      mt={{ xl: "30px", base: "15px" }}
+      mt={{ base: "15px", xl: "30px" }}
       p={4}
       border="solid #FF8080"
       borderWidth={BORDER_WIDTH}
       borderRadius="25px"
       bgGradient="linear(to-t, transparent, rgba(255, 128, 128, 0.15))"
-      transition="all 0.45s ease-out"
+      transition="all 0.3s ease-out"
     >
       <HStack spacing={3}>
         <Image
@@ -120,10 +120,10 @@ export const MediaBlock = () => {
           bg={MAIN_COLOR}
           color="#592828"
           fontFamily="heading"
-          fontSize={{ xl: "20px", base: "13px" }}
+          fontSize="xl"
           transition="all 0.3s ease-out"
           onClick={handleJoinClick}
-          _hover={{ transform: "scale(0.96)" }}
+          _hover={{ transform: "scale(0.95)" }}
           _active={{ transform: "scale(0.9)" }}
         >
           ПРИСОЕДИНИТЬСЯ

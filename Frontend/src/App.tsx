@@ -62,7 +62,7 @@ function App() {
           w="full"
           maxW={{ base: "370px", xl: "1300px" }}
           direction={{ base: "column", xl: "row" }}
-          justifyContent="space-between"
+          gap={{ base: "0px", xl: "30px" }}
           transition="all 0.45s ease-out"
         >
           <SocialBlock />

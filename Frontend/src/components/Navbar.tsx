@@ -91,7 +91,7 @@ export const Navbar = () => {
             sx={{
               "@media (hover: hover) and (pointer: fine)": {
                 "&:hover": {
-                  transform: "scale(0.96)",
+                  transform: "scale(0.95)",
                   border: copied ? "solid #80BFFF 6px" : "solid white 6px",
                 },
                 "&:active": {
@@ -181,7 +181,7 @@ export const Navbar = () => {
             fontSize={{ base: "14px", xl: "24px" }}
             transition="all 0.3s ease-out"
             cursor="pointer"
-            _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+            _hover={{ transform: "scale(0.95)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}
           >
             DISCORD
@@ -202,7 +202,7 @@ export const Navbar = () => {
             fontSize={{ base: "14px", xl: "24px" }}
             transition="all 0.3s ease-out"
             cursor="pointer"
-            _hover={{ transform: "scale(0.96)", borderColor: "white" }}
+            _hover={{ transform: "scale(0.95)", borderColor: "white" }}
             _active={{ transform: "scale(0.9)" }}
           >
             TELEGRAM

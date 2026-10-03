@@ -140,16 +140,44 @@ export const TokenBlock = () => {
     }
 
     try {
-      const purchaseRes = await fetch("https://api.revizemc.net/purchase", {
+      const purchaseRes = await fetch("https://api.revizemc.net/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username,
-          action: String(tokens),
+          username: username.trim(),
+          tokens: Number(tokens),
+          email: email.trim(),
         }),
       });
+
+      const purchaseData = await purchaseRes.json();
+
+      if (purchaseRes.ok && purchaseData.paymentUrl) {
+        window.location.href = purchaseData.paymentUrl;
+      } else {
+        console.error(purchaseData);
+
+        setSubmitErrors((prev) => ({
+          ...prev,
+          username: true,
+        }));
+
+        setIsFlashing(true);
+
+        setTimeout(() => {
+          setSubmitErrors((prev) => ({
+            ...prev,
+            username: false,
+          }));
+        }, 300);
+
+        setTimeout(() => {
+          setIsFlashing(false);
+        }, 600);
+      }
+
 
       if (purchaseRes.ok) {
         console.log("Оплата успешно инициирована!");
@@ -339,7 +367,7 @@ export const TokenBlock = () => {
             isLoading={isProcessing}
             onClick={handlePayClick}
             _hover={{
-              transform: "scale(0.96)",
+              transform: "scale(0.95)",
             }}
             _active={{
               transform: "scale(0.9)",
@@ -581,12 +609,12 @@ export const TokenBlock = () => {
                 transition="all 0.3s ease-out"
                 onClick={() => handleQuickSelect(val)}
                 _hover={{
-                  transform: "scale(0.92)",
+                  transform: "scale(0.95)",
                   borderColor: !isActive ? "white" : "transparent",
                   color: !isActive ? "white" : "#285928",
                 }}
                 _active={{
-                  transform: "scale(0.85)",
+                  transform: "scale(0.9)",
                 }}
               >
                 <Text lineHeight="1">{displayVal}</Text>

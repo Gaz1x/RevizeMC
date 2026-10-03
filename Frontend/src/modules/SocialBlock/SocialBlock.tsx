@@ -3,7 +3,7 @@ import { Button, HStack, Image, Text, VStack } from "@chakra-ui/react";
 import socialLogo from "./images/social.png";
 
 const MAIN_COLOR = "#FFFF80";
-const BUTTON_TEXT_COLOR = "#592828";
+const BUTTON_TEXT_COLOR = "#595928";
 const BORDER_RADIUS = "15px";
 const BORDER_WIDTH = { base: "4px", xl: "6px" };
 
@@ -30,10 +30,10 @@ const buttonStyles = {
   bg: MAIN_COLOR,
   color: BUTTON_TEXT_COLOR,
   fontFamily: "heading",
-  fontSize: { base: "13px", xl: "20px" },
+  fontSize: { base: "xl", xl: "xl" },
   transition: "transform 0.3s ease-out",
   _hover: {
-    transform: "scale(0.96)",
+    transform: "scale(0.95)",
   },
   _active: {
     transform: "scale(0.9)",

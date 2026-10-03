@@ -1,55 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="%PUBLIC_URL%/icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <!-- 1. Запрещает расширению Dark Reader менять цвета на сайте -->
-    <meta name="darkreader-lock">
 
-    <!-- 2. Говорит браузерам и другим расширениям, что сайт УЖЕ тёмный -->
-    <meta name="color-scheme" content="dark">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#80bfff" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="darkreader-lock" />
+
+    <title>RevizeMC</title>
+
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="RevizeMC — Minecraft-сервер нового поколения с уникальными режимами выживания без лишних правил и ограничений."
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>RevizeMC</title>
-    <meta name="title" content="RevizeMC — Играй по-новому!">
-    <meta name="description" content="Сервер нового поколения с уникальными режимами выживания, доступными в обычном Minecraft" />
-    <meta property="og:title" content="RevizeMC — Играй по-новому!" />
-    <meta property="og:description" content="Сервер нового поколения с уникальными режимами выживания, доступными в обычном Minecraft" />
+    <link rel="canonical" href="https://www.revizemc.net/" />
+
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="any" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="%PUBLIC_URL%/32x32.png"
+    />
+
+    <meta property="og:locale" content="ru_RU" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="RevizeMC" />
+    <meta property="og:title" content="RevizeMC — Играй по-новому!" />
+    <meta
+      property="og:description"
+      content="Minecraft-сервер нового поколения с уникальными режимами выживания."
+    />
     <meta property="og:url" content="https://www.revizemc.net/" />
-    <meta property="og:image" content="%PUBLIC_URL%/logo192.png" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="RevizeMC — Играй по-новому!" />
+    <meta
+      name="twitter:description"
+      content="Minecraft-сервер нового поколения с уникальными режимами выживания."
+    />
+
+    <meta name="robots" content="max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "RevizeMC",
+        "url": "https://www.revizemc.net/",
+        "description": "Minecraft-сервер нового поколения с уникальными режимами выживания."
+      }
+    </script>
   </head>
+
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>Для работы сайта необходимо включить JavaScript</noscript>
+
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
