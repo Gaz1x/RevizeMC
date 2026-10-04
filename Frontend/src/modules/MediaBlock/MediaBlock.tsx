@@ -32,6 +32,7 @@ export const MediaBlock = () => {
       maxW={{ xl: "635px", base: "370px" }}
       mt={{ base: "15px", xl: "30px" }}
       p={4}
+      // spacing={4}
       border="solid #FF8080"
       borderWidth={BORDER_WIDTH}
       borderRadius="25px"
@@ -90,7 +91,7 @@ export const MediaBlock = () => {
         justify="space-between"
         gap={4}
       >
-        <VStack align="start" spacing={2} flex="1" minW={0}>
+        <VStack align="start" spacing={"5px"} flex="1" minW={0}>
           {BENEFITS.map((benefit) => (
             <HStack key={benefit} spacing={{ xl: 4, base: 2.5 }}>
               <Box

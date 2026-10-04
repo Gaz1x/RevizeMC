@@ -52,7 +52,7 @@ export const SocialBlock = () => {
       maxW={{ base: "370px", xl: "635px" }}
       mt={{ base: "15px", xl: "30px" }}
       p={4}
-      gap={4}
+      // spacing={4}
       border="solid"
       borderColor={MAIN_COLOR}
       borderWidth={BORDER_WIDTH}
@@ -77,6 +77,7 @@ export const SocialBlock = () => {
         </Text>
       </HStack>
 
+      <VStack spacing={4} align="start">
       <Text
         color="white"
         fontFamily="heading"
@@ -113,6 +114,7 @@ export const SocialBlock = () => {
         >
           {SOCIAL_LINKS[2].label}
         </Button>
+      </VStack>
       </VStack>
     </VStack>
   );
