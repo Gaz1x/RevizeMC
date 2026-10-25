@@ -15,7 +15,7 @@ import {
   SimpleGrid,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import buyingLogo from "./images/token.png";
 
@@ -23,6 +23,51 @@ const TOKEN_OPTIONS = [
   1000, 2000, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000,
   200000, 300000, 400000, 500000,
 ];
+
+/*
+ * Формат промокода: латиница обох регистров и цифры, от 4 до 32.
+ *
+ * Подчёркивания тут нет, в отличие от ника — сокопируешь шаблон
+ * ника, и в поле залетит some_code, который фронт пропустит,
+ * а бэк отвергнет.
+ *
+ * Границы обязаны совпадать с PROMOCODE_FORMAT в Backend/lib/validators.js.
+ * Фронт и бэк проверяют по одним и тем же правилам, иначе код,
+ * валидный на вводе, отвалится при отправке заказа.
+ */
+const PROMO_PATTERN = /^[a-zA-Z0-9]{4,32}$/;
+
+/*
+ * Потолок длины для фильтра ввода — чтобы в поле нельзя было
+ * вбить строку любой длины.
+ */
+const PROMO_MAX_LENGTH = 32;
+
+/*
+ * Задержка перед проверкой промокода на сервере.
+ * Пока человек печатает — запрос не уходит, пинг случается
+ * только через секунду после последней правки в поле.
+ */
+const PROMO_CHECK_DELAY = 1000;
+
+/*
+ * Исход проверки промокода.
+ *
+ * alreadyUsed — игрок уже применял этот же код (таблица uses).
+ * notOwned — код типа LINK, но выдан другому игроку.
+ * Оба — отдельные флаги, а не invalid: код настоящий, скидка на него
+ * есть, просто этому игроку он недоступен. Смешивать с «неверный
+ * ввод» нельзя — иначе нельзя отличить опечатку от чужого кода.
+ */
+type PromoCheck =
+  | {
+      status: "valid";
+      discount: number | null;
+      alreadyUsed: boolean;
+      notOwned: boolean;
+    }
+  | { status: "invalid" }
+  | { status: "unavailable" };
 
 export const TokenBlock = () => {
   const [tokens, setTokens] = useState<number>(1000);
@@ -35,21 +80,52 @@ export const TokenBlock = () => {
   const [documentsAccepted, setDocumentsAccepted] = useState(false);
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [promocode, setPromo] = useState("");
+
+  const [discount, setDiscount] = useState<number | null>(null);
+  const [checkedPromo, setCheckedPromo] = useState("");
+
+  /*
+   * Таймер отложенной проверки промокода.
+   * Хранится в ref, чтобы не пересоздавался при каждом рендере.
+   */
+  const promoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /*
+   * Номер последнего запрошенной проверки кода.
+   * Ответ на устаревший запрос отбрасывается — иначе при быстрой
+   * вводке поздний ответ перезаписал бы результат более позднего.
+   */
+  const promoRequestRef = useRef(0);
 
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [submitErrors, setSubmitErrors] = useState({
     username: false,
-    email: false,
+    promocode: false,
     documents: false,
   });
 
   const [isFlashing, setIsFlashing] = useState(false);
 
+  /*
+   * Отложенная проверка не должна пережить размонтирование компонента.
+   */
+  useEffect(() => {
+    return () => {
+      if (promoTimerRef.current !== null) {
+        clearTimeout(promoTimerRef.current);
+      }
+    };
+  }, []);
+
   const isDesktop = useBreakpointValue({ base: false, xl: true });
 
   const rubles = Math.max(0, tokens / 10);
+
+  const discountedRubles = discount
+    ? Math.round((rubles * (100 - discount)) / 100)
+    : rubles;
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSubmitErrors((prev) => ({ ...prev, username: false }));
@@ -61,10 +137,244 @@ export const TokenBlock = () => {
     }
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSubmitErrors((prev) => ({ ...prev, email: false }));
+  /*
+   * Проверяет промокод на сервере.
+   *
+   * username передаётся не всегда: он нужен, чтобы узнать, не применял
+   * ли уже этот игрок этот код и не выдан ли LINK-код кому-то другому.
+   * Когда ника ещё нет, сервер просто вернёт alreadyUsed: false
+   * и notOwned: false.
+   *
+   * Три исхода вместо двух: «проверить не удалось» (обрыв сети,
+   * превышен rate-limit) — это не то же самое, что неверный код,
+   * иначе пользователь увидел бы ошибку ввода из-за сети.
+   */
+  const checkPromocode = async (
+    code: string,
+    username?: string,
+  ): Promise<PromoCheck> => {
+    try {
+      const res = await fetch("https://api.revizemc.net/promocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promocode: code, username }),
+      });
 
-    setEmail(e.target.value.trim());
+      if (!res.ok) return { status: "unavailable" };
+
+      const data = await res.json();
+
+      if (!data.valid) return { status: "invalid" };
+
+      const value = Number(data.discount);
+
+      return {
+        status: "valid",
+        discount:
+          Number.isFinite(value) && value >= 0 && value <= 100
+            ? value
+            : null,
+        alreadyUsed: data.alreadyUsed === true,
+        notOwned: data.notOwned === true,
+      };
+    } catch (error) {
+      console.error("Ошибка проверки промокода:", error);
+      return { status: "unavailable" };
+    }
+  };
+
+  /*
+   * Запускает проверку и применяет результат к состоянию.
+   *
+   * Ответ отбрасывается, если к его приходу поле уже изменилось:
+   * иначе результат устаревшего запроса перекрыл бы свежий.
+   */
+  const runPromoCheck = async (code: string, requestNumber: number) => {
+    const result = await checkPromocode(code);
+
+    if (requestNumber !== promoRequestRef.current) return;
+
+    if (result.status === "invalid") {
+      setDiscount(null);
+      setCheckedPromo("");
+      setSubmitErrors((prev) => ({ ...prev, promocode: true }));
+      return;
+    }
+
+    if (result.status === "unavailable") return;
+
+    setDiscount(result.discount);
+    setCheckedPromo(code);
+    setSubmitErrors((prev) => ({ ...prev, promocode: false }));
+  };
+
+  /*
+   * Подсвечивает поле промокода как ошибочное, если формат не подошёл.
+   *
+   * Проверка чисто локальная и мгновенная: сервер отверг бы такой код
+   * точно так же, но заставлять ждать ответа, чтобы сказать
+   * «в двух символах смысла нет», незачем.
+   */
+  const markPromoFormatError = (code: string) => {
+    setSubmitErrors((prev) => ({
+      ...prev,
+      promocode: !PROMO_PATTERN.test(code),
+    }));
+  };
+
+  /*
+   * Ставит проверку в очередь на секунду вперёд.
+   *
+   * Пока в поле продолжают печатать, таймер каждый раз сбрасывается,
+   * и запрос уходит лишь через PROMO_CHECK_DELAY после последней
+   * правки — по одному пингу на паузу в вводе, а не на каждую клавишу.
+   */
+  const schedulePromoCheck = (code: string) => {
+    if (promoTimerRef.current !== null) {
+      clearTimeout(promoTimerRef.current);
+      promoTimerRef.current = null;
+    }
+
+    const requestNumber = ++promoRequestRef.current;
+
+    /* Пусто — человек ещё только начал ввод, подсвечивать нечего. */
+    if (code === "") return;
+
+    /*
+     * Меньше трёх символов либо недопустимые символы — ошибка ввода.
+     * Показываем её прямо сейчас, не дожидаясь ни таймера, ни ответа.
+     */
+    if (!PROMO_PATTERN.test(code)) {
+      markPromoFormatError(code);
+      return;
+    }
+
+    /*
+     * Формат в порядке — дальше код может быть настоящим,
+     * и это уже вопрос к серверу, а не к регулярке.
+     */
+    setSubmitErrors((prev) => ({ ...prev, promocode: false }));
+
+    promoTimerRef.current = setTimeout(() => {
+      promoTimerRef.current = null;
+      void runPromoCheck(code, requestNumber);
+    }, PROMO_CHECK_DELAY);
+  };
+
+  const handlePromoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+
+    /*
+     * В поле попадает только то, что целиком укладывается в формат:
+     * латиница и цифры, не длиннее PROMO_MAX_LENGTH.
+     *
+     * Недопустимый символ отбрасывается целиком, а не вычищается
+     * из строки: значение остаётся прежним — ровно как у ника.
+     * Печатать «не туда» бессмысленно, поле просто не меняется.
+     *
+     * Короткий ввод НЕ блокируется: без 1-3 символов не добраться
+     * до 4. Длина проверяется отдельно, в schedulePromoCheck.
+     */
+    if (
+      !/^[a-zA-Z0-9]*$/.test(value) ||
+      value.length > PROMO_MAX_LENGTH
+    ) {
+      return;
+    }
+
+    setSubmitErrors((prev) => ({ ...prev, promocode: false }));
+
+    setPromo(value);
+
+    /*
+     * Поле меняется — старая скидка больше не действует,
+     * а прежний код не считается подтверждённым для нового значения.
+     */
+    setDiscount(null);
+    setCheckedPromo("");
+
+    schedulePromoCheck(value);
+  };
+
+  /*
+   * Уход с поля: незавершённую отложенную проверку не ждём,
+   * запускаем сразу — пользователь уже закончил вводить.
+   */
+  const handlePromoBlur = () => {
+    const code = promocode.trim();
+
+    if (promoTimerRef.current !== null) {
+      clearTimeout(promoTimerRef.current);
+      promoTimerRef.current = null;
+    }
+
+    if (code === "") return;
+
+    /*
+     * Ушёл с поля, так и не дописав код — ошибка не гаснет
+     * при потере фокуса, поле остаётся подсвеченным.
+     */
+    if (!PROMO_PATTERN.test(code)) {
+      markPromoFormatError(code);
+      return;
+    }
+
+    /* Уже подтверждён ранее — второй запрос не нужен. */
+    if (checkedPromo === code) return;
+
+    void runPromoCheck(code, ++promoRequestRef.current);
+  };
+
+  /*
+   * Проверяет, существует ли ник.
+   *
+   * Возвращает true/false по ответу сервера либо null, если проверить
+   * не удалось. null — отдельное состояние, которое нельзя путать
+   * с «такого ника нет»: 429 подсвечивал поле ника как неверное,
+   * хотя сам ник был правильный.
+   *
+   * На 429 выполняется один повтор с паузой из Retry-After — лимитер
+   * сам говорит, сколько ждать, и мы не гадаем.
+   *
+   * Стойкий отказ возвращает null: заказ без подтверждённого ника
+   * создавать нельзя, иначе токены уйдут несуществующему игроку
+   * и провалятся уже на этапе выдачи.
+   */
+  const checkPlayerExists = async (
+    name: string,
+  ): Promise<boolean | null> => {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const res = await fetch(
+          `https://api.revizemc.net/player/${encodeURIComponent(name)}`,
+        );
+
+        if (res.status === 429 && attempt === 0) {
+          const retryAfter = Number(res.headers.get("Retry-After"));
+
+          const waitMs = Math.min(
+            Number.isFinite(retryAfter) && retryAfter > 0
+              ? retryAfter * 1000 + 250
+              : 1000,
+            3000,
+          );
+
+          await new Promise((resolve) => setTimeout(resolve, waitMs));
+          continue;
+        }
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+
+        return data.exists === true;
+      } catch (error) {
+        console.error("Ошибка проверки ника:", error);
+        return null;
+      }
+    }
+
+    return null;
   };
 
   const handlePayClick = async () => {
@@ -73,62 +383,86 @@ export const TokenBlock = () => {
 
     const isUsernameLocalError = username.length < 3;
 
-    const isEmailLocalError = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const promoValue = promocode.trim();
+    const isPromoLocalError =
+      promoValue !== "" && !PROMO_PATTERN.test(promoValue);
     const isDocumentsError = !documentsAccepted;
 
     let isUsernameServerError = false;
-    let isEmailServerError = false;
+    let isPromoServerError = false;
 
     if (!isUsernameLocalError) {
-      try {
-        const checkRes = await fetch(
-          `https://api.revizemc.net/player/${username}`,
-        );
-        if (checkRes.ok) {
-          const checkData = await checkRes.json();
-          if (!checkData.exists) {
-            isUsernameServerError = true;
-          }
-        } else {
-          isUsernameServerError = true;
-        }
-      } catch (error) {
-        console.error("Ошибка проверки ника:", error);
+      /*
+       * false — игрока нет, null — проверить не удалось.
+       * Оба блокируют заказ: без подтверждённого ника токены
+       * уйдут несуществующему игроку.
+       */
+      const playerExists = await checkPlayerExists(username);
+
+      if (playerExists !== true) {
         isUsernameServerError = true;
       }
     }
 
-    if (!isEmailLocalError) {
-      try {
-        const emailRes = await fetch("https://api.revizemc.net/email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email }),
-        });
+    if (!isPromoLocalError && promoValue !== "") {
+      /*
+       * Отложенная проверка из ввода ещё могла не отработать —
+       * гасим, чтобы после отправки формы она не прилетела
+       * и не перекрыла состояние уже вторым запросом.
+       */
+      if (promoTimerRef.current !== null) {
+        clearTimeout(promoTimerRef.current);
+        promoTimerRef.current = null;
+      }
 
-        if (emailRes.ok) {
-          const emailData = await emailRes.json();
-          if (!emailData.valid) isEmailServerError = true;
+      /*
+       * Проверяем заново и обязательно с никнеймом: «применял ли
+       * этот игрок этот код» от ника зависит, поэтому закэшированного
+       * результата ввода (checkedPromo) недостаточно — игрок мог
+       * вписать промокод раньше, чем ник.
+       *
+       * Один лишний запрос на клик по оплате — приемлемая цена
+       * за то, что скидка не уйдёт чужому или повторно.
+       */
+      const result = await checkPromocode(promoValue, username);
+
+      if (result.status === "invalid") {
+        isPromoServerError = true;
+      } else if (result.status === "valid") {
+        if (result.alreadyUsed || result.notOwned) {
+          /*
+           * Код настоящий, скидка на него есть, но этому игроку
+           * он недоступен: уже тратился (uses) либо выдан другому
+           * (LINK через servervariables_players). Подсвечиваем поле
+           * и не пускаем оплату.
+           */
+          isPromoServerError = true;
+        } else {
+          setDiscount(result.discount);
+          setCheckedPromo(promoValue);
         }
-      } catch (error) {
-        console.error("Ошибка проверки почты:", error);
+        /*
+         * status === "unavailable" — проверить не удалось.
+         * Оплату не блокируем: промокод опционален, а финальное
+         * слово всё равно за /create-order на сервере.
+         */
       }
     }
 
-    const finalEmailError = isEmailLocalError || isEmailServerError;
+    const finalPromoError = isPromoLocalError || isPromoServerError;
     const finalUsernameError = isUsernameLocalError || isUsernameServerError;
 
-    if (finalUsernameError || finalEmailError || isDocumentsError) {
+    if (finalUsernameError || finalPromoError || isDocumentsError) {
       setSubmitErrors({
         username: finalUsernameError,
-        email: finalEmailError,
+        promocode: finalPromoError,
         documents: isDocumentsError,
       });
 
       setIsFlashing(true);
 
       setTimeout(() => {
-        setSubmitErrors({ username: false, email: false, documents: false });
+        setSubmitErrors({ username: false, promocode: false, documents: false });
       }, 300);
 
       setTimeout(() => {
@@ -148,53 +482,61 @@ export const TokenBlock = () => {
         body: JSON.stringify({
           username: username.trim(),
           tokens: Number(tokens),
-          email: email.trim(),
+          promocode: promocode.trim(),
         }),
       });
 
       const purchaseData = await purchaseRes.json();
 
       if (purchaseRes.ok && purchaseData.paymentUrl) {
+        console.log("Оплата успешно инициирована");
+
+        setUsername("");
+        setPromo("");
+        setDiscount(null);
+        setCheckedPromo("");
+        setDocumentsAccepted(false);
+        setTokens(1000);
+        setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
+
         window.location.href = purchaseData.paymentUrl;
       } else {
         console.error(purchaseData);
 
-        setSubmitErrors((prev) => ({
-          ...prev,
-          username: true,
-        }));
+        /*
+         * Отказ, относящийся к промокоду, подсвечивает поле промокода.
+         *
+         * Раньше любая ошибка /create-order красила поле ника, хотя
+         * поле ника здесь ни при чём — человек искал бы ошибку в нике,
+         * тогда как проблема в чужом LINK-коде.
+         *
+         * Ошибка приходит именно сюда, а не только из предварительной
+         * проверки: код мог стать чужим между двумя запросами, а прямой
+         * вызов API проверку на фронте минует вовсе.
+         */
+        const isPromoFailure =
+          purchaseData?.code === "PROMO_NOT_OWNED" ||
+          purchaseData?.code === "PROMO_INVALID";
+
+        setSubmitErrors({
+          username: !isPromoFailure,
+          promocode: isPromoFailure,
+          documents: false,
+        });
 
         setIsFlashing(true);
 
         setTimeout(() => {
-          setSubmitErrors((prev) => ({
-            ...prev,
+          setSubmitErrors({
             username: false,
-          }));
+            promocode: false,
+            documents: false,
+          });
         }, 300);
 
         setTimeout(() => {
           setIsFlashing(false);
         }, 600);
-      }
-
-
-      if (purchaseRes.ok) {
-        console.log("Оплата успешно инициирована!");
-
-        setUsername("");
-        setEmail("");
-        setDocumentsAccepted(false);
-        setTokens(1000);
-        setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
-      } else {
-        setSubmitErrors((prev) => ({ ...prev, username: true }));
-        setIsFlashing(true);
-        setTimeout(
-          () => setSubmitErrors((prev) => ({ ...prev, username: false })),
-          300,
-        );
-        setTimeout(() => setIsFlashing(false), 600);
       }
     } catch (error) {
       console.error("Сбой оплаты:", error);
@@ -323,25 +665,26 @@ export const TokenBlock = () => {
             }}
           />
           <Input
-            bg={submitErrors.email ? "#592828" : "#285928"}
+            bg={submitErrors.promocode ? "#592828" : "#285928"}
             color="white"
-            placeholder="ПОЧТА"
+            placeholder="ПРОМОКОД"
             border="solid"
-            borderColor={submitErrors.email ? "#FF8080" : "#80ff80"}
+            borderColor={submitErrors.promocode ? "#FF8080" : "#80ff80"}
             borderWidth={{ xl: "6px", base: "4px" }}
             h="50px"
             borderRadius="15px"
             fontSize="lg"
             w="full"
             transition="all 0.3s ease-in-out"
-            value={email}
-            onChange={handleEmailChange}
+            value={promocode}
+            onChange={handlePromoChange}
+            onBlur={handlePromoBlur}
             _placeholder={{
-              color: submitErrors.email ? "#FF8080" : "#80ff80",
+              color: submitErrors.promocode ? "#FF8080" : "#80ff80",
               transition: "color 0.3s ease-in-out",
             }}
             _hover={{
-              borderColor: submitErrors.email ? "#FF8080" : "#80ff80",
+              borderColor: submitErrors.promocode ? "#FF8080" : "#80ff80",
             }}
             _focus={{
               borderColor: "white",
@@ -373,7 +716,7 @@ export const TokenBlock = () => {
               transform: "scale(0.9)",
             }}
           >
-            {rubles.toLocaleString("ru-RU")} рублей
+            {discountedRubles.toLocaleString("ru-RU")} рублей
           </Button>
 
           <VStack
@@ -623,6 +966,17 @@ export const TokenBlock = () => {
           })}
         </SimpleGrid>
       </Flex>
+      <VStack align={{ base: "center", xl: "flex-end"}} mt={-2} mb={-2}>
+        <Text
+          fontFamily="heading"
+          fontSize={{ base: "11px", xl: "13px" }}
+          lineHeight="1.5"
+          letterSpacing="wide"
+          color="white"
+        >
+          ТОКЕНЫ — ИГРОВАЯ ВАЛЮТА НА СЕРВЕРЕ
+        </Text>
+      </VStack>
     </VStack>
   );
 };

@@ -1,87 +1,121 @@
-import { Flex, Text, Link, useBreakpointValue } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { Box, Flex, Grid, Link, Text } from "@chakra-ui/react";
+
+const FOOTER_LINKS = [
+  {
+    label: "ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ",
+    href: "https://www.revizemc.net/terms-of-service.pdf",
+  },
+  {
+    label: "ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ",
+    href: "https://www.revizemc.net/privacy-policy.pdf",
+  },
+];
+
+const baseTextStyles = {
+  fontFamily: "heading",
+  fontSize: { base: "12px", xl: "12.75px" },
+  lineHeight: "1.5",
+  letterSpacing: "wide",
+};
+
+const mutedTextStyles = {
+  ...baseTextStyles,
+  fontSize: { base: "9px", xl: "12.1px" },
+  color: "rgba(255, 255, 255, 0.5)",
+};
+
+const linkStyles = {
+  ...baseTextStyles,
+  color: "#80BFFF",
+  transition: "color 0.3s ease-in-out",
+  _hover: {
+    color: "white",
+    textDecoration: "none",
+  },
+};
 
 export const Footer = () => {
-  const isDesktop = useBreakpointValue({ base: false, xl: true });
-
-  const linkStyles = {
-    color: "rgba(255,255,255, 0.5)",
-    fontFamily: "heading",
-    fontWeight: "bold",
-    fontSize: { base: "xs", xl: "sm" },
-    letterSpacing: "wider",
-    transition: "all 0.3s ease-in-out",
-    cursor: "pointer",
-    _hover: {
-      color: "white",
-    },
-  };
-
   const currentYear = new Date().getFullYear();
 
   return (
     <Flex
+      as="footer"
       w="full"
-      maxW={{ xl: "1300px", base: "370px" }}
+      maxW={{ base: "370px", xl: "1300px" }}
+      minH={{ base: "120px", xl: "100px" }}
       bgGradient="linear(to-t, transparent, rgba(153, 217, 255, 0.15))"
       border="solid #80BFFF"
-      borderWidth={{ xl: "6px", base: "4px" }}
-      borderRadius={"25px"}
-      py={4}
-      px={4}
-      mt={{ xl: "30px", base: "15px" }}
-      direction={{ base: "column", xl: "row" }}
+      borderWidth={{ base: "4px", xl: "6px" }}
+      borderRadius="25px"
+      px={{ base: 3, xl: 5 }}
+      py={{ base: 3, xl: 4 }}
+      mt={{ base: "15px", xl: "30px" }}
+      direction="column"
       justifyContent="space-between"
-      alignItems="center"
-      gap={{ base: 1, xl: 0 }}
+      gap={3}
     >
-      <Text
-        color="white"
-        fontFamily="heading"
-        fontSize={{ base: "sm", xl: "sm" }}
+      <Grid
+        w="full"
+        templateColumns={{ base: "1fr", xl: "1fr 1fr" }}
+        alignItems="start"
+        columnGap={6}
+        rowGap={2}
       >
-        © {currentYear} REVIZEMC.NET
-      </Text>
+        <Box textAlign={{ base: "center", xl: "left" }}>
+          <Text
+            fontSize={{ base: "12px", xl: "16px" }}
+            color={ "white" }
+          >
+            REVIZEMC НЕ СВЯЗАН С MOJANG STUDIOS
+          </Text>
 
-      <Flex
-        direction={{ base: "column", xl: "row" }}
-        alignItems="center"
-        gap={{ base: 1, xl: 12 }}
-      >
-        <Text
-          {...linkStyles}
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(
-              "https://www.revizemc.net/terms-of-service.pdf",
-              "_blank",
-            );
-          }}
-        >
-          ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ
-        </Text>
+          <Text {...mutedTextStyles}>
+            САМОЗАНЯТЫЙ ЛЯПУНОВ Алексей Александрович
+          </Text>
 
-        <Text
-          {...linkStyles}
-          onClick={(e) => {
-            e.stopPropagation();
-            window.open(
-              "https://www.revizemc.net/privacy-policy.pdf",
-              "_blank",
-            );
-          }}
-        >
-          ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ
-        </Text>
-      </Flex>
+          <Text {...mutedTextStyles}>
+            ИНН: 272200094602 •{" "}
+            <Link
+              href="mailto:admin@revizemc.net"
+              color="inherit"
+              transition="color 0.3s ease-in-out"
+              _hover={{
+                color: "white",
+                textDecoration: "none",
+              }}
+            >
+              admin@revizemc.net
+            </Link>
+          </Text>
+        </Box>
 
-      <Text
-        color="white"
-        fontFamily="heading"
-        fontSize={{ base: "sm", xl: "sm" }}
-      >
-        ADMIN@REVIZEMC.NET
-      </Text>
+        <Box textAlign={{ base: "center", xl: "right" }}>
+          <Text
+            {...baseTextStyles}
+            color="white"
+            fontSize={{ base: "12px", xl: "16px" }}
+          >
+            ПРАВОВАЯ ИНФОРМАЦИЯ
+          </Text>
+
+          <Flex
+            direction="column"
+            alignItems={{ base: "center", xl: "flex-end" }}
+          >
+            {FOOTER_LINKS.map(({ label, href }) => (
+              <Link
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                {...linkStyles}
+              >
+                {label}
+              </Link>
+            ))}
+          </Flex>
+        </Box>
+      </Grid>
     </Flex>
   );
 };

@@ -7,7 +7,6 @@ import { SocialBlock } from "./modules/SocialBlock/SocialBlock";
 import { MediaBlock } from "./modules/MediaBlock/MediaBlock";
 import { ServerBlock } from "./modules/ServerBlock/ServerBlock";
 import { Footer } from "./components/Footer";
-import { Credits } from "./components/Credits";
 
 import theme from "./theme";
 import "./assets/dayssansblack.css";
@@ -68,9 +67,9 @@ function App() {
           <SocialBlock />
           <MediaBlock />
         </Flex>
-
         <Footer />
-        <Credits />
+          <Box mb={{ xl: "30px", base: "15px" }}>
+          </Box>
       </Container>
     </ChakraProvider>
   );
