@@ -33,7 +33,7 @@ async function findPromo(code) {
     SELECT
       discount,
       bonus
-    FROM revizeapi_promo.codes
+    FROM revizemc_api.codes
     WHERE code = ?
       AND remain > 0
     LIMIT 1

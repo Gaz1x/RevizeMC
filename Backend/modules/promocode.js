@@ -22,7 +22,7 @@ const invalidResponse = {
 /*
  * Проверяет, принадлежит ли LINK-промокод игроку.
  *
- * В revizeapi_promo.codes лежит только тип бонуса, а не владелец.
+ * В revizemc_api.codes лежит только тип бонуса, а не владелец.
  * Владелец живёт в схеме revizemc_servervariables, разнесённой
  * на две таблицы:
  *
@@ -134,7 +134,7 @@ promocodeRouter.post('/', async (req, res) => {
       SELECT
         discount,
         bonus
-      FROM revizeapi_promo.codes
+      FROM revizemc_api.codes
       WHERE code = ?
         AND remain > 0
       LIMIT 1
@@ -165,7 +165,7 @@ promocodeRouter.post('/', async (req, res) => {
         const [usedRows] = await dbPool.query(
           `
           SELECT 1
-          FROM revizeapi_promo.uses
+          FROM revizemc_api.uses
           WHERE username = ?
             AND code = ?
           LIMIT 1
@@ -222,7 +222,7 @@ export async function consumePromocode(connection, code, username) {
       code,
       bonus,
       remain
-    FROM revizeapi_promo.codes
+    FROM revizemc_api.codes
     WHERE code = ?
     FOR UPDATE
     `,
@@ -243,7 +243,7 @@ export async function consumePromocode(connection, code, username) {
 
   await connection.query(
     `
-    UPDATE revizeapi_promo.codes
+    UPDATE revizemc_api.codes
     SET remain = remain - 1
     WHERE code = ?
     `,
@@ -258,7 +258,7 @@ export async function consumePromocode(connection, code, username) {
   if (remainAfter <= 0) {
     await connection.query(
       `
-      DELETE FROM revizeapi_promo.codes
+      DELETE FROM revizemc_api.codes
       WHERE code = ?
       `,
       [code]
@@ -266,7 +266,7 @@ export async function consumePromocode(connection, code, username) {
 
     await connection.query(
       `
-      DELETE FROM revizeapi_promo.uses
+      DELETE FROM revizemc_api.uses
       WHERE code = ?
       `,
       [code]
@@ -283,7 +283,7 @@ export async function consumePromocode(connection, code, username) {
   if (promo.bonus === 'LINK') {
     await connection.query(
       `
-      DELETE FROM revizeapi_promo.codes
+      DELETE FROM revizemc_api.codes
       WHERE code = ?
       `,
       [code]
@@ -294,7 +294,7 @@ export async function consumePromocode(connection, code, username) {
 
   await connection.query(
     `
-    INSERT INTO revizeapi_promo.uses (username, code)
+    INSERT INTO revizemc_api.uses (username, code)
     VALUES (?, ?)
     `,
     [username, code]

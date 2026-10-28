@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "./static/css/main.ec363e82.css",
-    "main.js": "./static/js/main.d5225722.js",
+    "main.js": "./static/js/main.e3c2d438.js",
     "static/media/DaysSansBlack.otf": "./static/media/DaysSansBlack.8187e6467670bbe632ed.otf",
     "static/media/token.png": "./static/media/token.2b30e992fb39a3bd0d5f.png",
     "static/media/latest.png": "./static/media/latest.2417a738144003815f09.png",
@@ -11,10 +11,10 @@
     "static/media/logo.png": "./static/media/logo.9191699c131a0838f01c.png",
     "index.html": "./index.html",
     "main.ec363e82.css.map": "./static/css/main.ec363e82.css.map",
-    "main.d5225722.js.map": "./static/js/main.d5225722.js.map"
+    "main.e3c2d438.js.map": "./static/js/main.e3c2d438.js.map"
   },
   "entrypoints": [
     "static/css/main.ec363e82.css",
-    "static/js/main.d5225722.js"
+    "static/js/main.e3c2d438.js"
   ]
 }

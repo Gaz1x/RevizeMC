@@ -25,17 +25,18 @@ const TOKEN_OPTIONS = [
 ];
 
 /*
- * Формат промокода: латиница обох регистров и цифры, от 4 до 32.
+ * Формат промокода: латиница ЗАГЛАВНЫМИ и цифры, от 4 до 32.
+ *
+ * Регистр в поле не сохраняется: ввод нормализуется в заглавные
+ * (handlePromoChange), поэтому строчных букв тут по определению
+ * не бывает. Бэк при этом терпим к регистру — исторические
+ * строчные записи в БД находятся через ci-коллацию MySQL.
  *
  * Подчёркивания тут нет, в отличие от ника — сокопируешь шаблон
  * ника, и в поле залетит some_code, который фронт пропустит,
  * а бэк отвергнет.
- *
- * Границы обязаны совпадать с PROMOCODE_FORMAT в Backend/lib/validators.js.
- * Фронт и бэк проверяют по одним и тем же правилам, иначе код,
- * валидный на вводе, отвалится при отправке заказа.
  */
-const PROMO_PATTERN = /^[a-zA-Z0-9]{4,32}$/;
+const PROMO_PATTERN = /^[A-Z0-9]{4,32}$/;
 
 /*
  * Потолок длины для фильтра ввода — чтобы в поле нельзя было
@@ -44,11 +45,11 @@ const PROMO_PATTERN = /^[a-zA-Z0-9]{4,32}$/;
 const PROMO_MAX_LENGTH = 32;
 
 /*
- * Задержка перед проверкой промокода на сервере.
+ * Единая задержка отложенных проверок полей (ник и промокод).
  * Пока человек печатает — запрос не уходит, пинг случается
  * только через секунду после последней правки в поле.
  */
-const PROMO_CHECK_DELAY = 1000;
+const CHECK_DELAY = 1000;
 
 /*
  * Исход проверки промокода.
@@ -114,6 +115,13 @@ export const TokenBlock = () => {
    */
   const promoRequestRef = useRef(0);
 
+  /*
+   * То же самое для отложенной проверки ника: механизм
+   * идентичен промокоду — таймер плюс счётчик устаревших ответов.
+   */
+  const usernameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const usernameRequestRef = useRef(0);
+
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [submitErrors, setSubmitErrors] = useState({
@@ -131,6 +139,10 @@ export const TokenBlock = () => {
     return () => {
       if (promoTimerRef.current !== null) {
         clearTimeout(promoTimerRef.current);
+      }
+
+      if (usernameTimerRef.current !== null) {
+        clearTimeout(usernameTimerRef.current);
       }
     };
   }, []);
@@ -150,6 +162,12 @@ export const TokenBlock = () => {
 
     if (isValid && value.length <= 16) {
       setUsername(value);
+
+      /*
+       * Ник проверяется на существование прямо при вводе —
+       * той же отложенной схемой, что промокод.
+       */
+      scheduleUsernameCheck(value);
 
       /*
        * Применимость промокода зависит от ника (uses, LINK-владелец) —
@@ -334,15 +352,21 @@ export const TokenBlock = () => {
     promoTimerRef.current = setTimeout(() => {
       promoTimerRef.current = null;
       void runPromoCheck(code, username, requestNumber);
-    }, PROMO_CHECK_DELAY);
+    }, CHECK_DELAY);
   };
 
   const handlePromoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.trim();
+    /*
+     * Регистр не сохраняется: с caps или без — буквы всегда
+     * заглавные. Нормализуется само значение, а не только вид:
+     * состояние, проверки и то, что уйдёт на сервер, — везде
+     * заглавные.
+     */
+    const value = e.target.value.trim().toUpperCase();
 
     /*
      * В поле попадает только то, что целиком укладывается в формат:
-     * латиница и цифры, не длиннее PROMO_MAX_LENGTH.
+     * латиница ЗАГЛАВНЫМИ и цифры, не длиннее PROMO_MAX_LENGTH.
      *
      * Недопустимый символ отбрасывается целиком, а не вычищается
      * из строки: значение остаётся прежним — ровно как у ника.
@@ -352,7 +376,7 @@ export const TokenBlock = () => {
      * до 4. Длина проверяется отдельно, в schedulePromoCheck.
      */
     if (
-      !/^[a-zA-Z0-9]*$/.test(value) ||
+      !/^[A-Z0-9]*$/.test(value) ||
       value.length > PROMO_MAX_LENGTH
     ) {
       return;
@@ -457,6 +481,66 @@ export const TokenBlock = () => {
     return null;
   };
 
+  /*
+   * Применяет результат проверки ника к полю.
+   *
+   * false — такого игрока нет, поле краснеет. true — игрок найден.
+   * null (обрыв сети, превышен лимит) — без изменений: неудачу
+   * нельзя отличить от отсутствия ника, а окончательное слово
+   * всё равно за кликом по оплате, где проверка повторяется
+   * с ретраем по Retry-After.
+   */
+  const runUsernameCheck = async (
+    name: string,
+    requestNumber: number,
+  ) => {
+    const exists = await checkPlayerExists(name);
+
+    if (requestNumber !== usernameRequestRef.current) return;
+
+    if (exists === null) return;
+
+    setSubmitErrors((prev) => ({ ...prev, username: !exists }));
+  };
+
+  /*
+   * Ставит проверку ника в очередь — та же схема, что у промокода:
+   * таймер сбрасывается на каждую правку, счётчик гасит ответы,
+   * пришедшие после следующей правки.
+   */
+  const scheduleUsernameCheck = (name: string) => {
+    if (usernameTimerRef.current !== null) {
+      clearTimeout(usernameTimerRef.current);
+      usernameTimerRef.current = null;
+    }
+
+    const requestNumber = ++usernameRequestRef.current;
+
+    /* Пусто — ввод отменён, подсвечивать нечего. */
+    if (name === "") {
+      setSubmitErrors((prev) => ({ ...prev, username: false }));
+      return;
+    }
+
+    /*
+     * Короче трёх символов — ошибка ввода: ников из одного-двух
+     * символов в Minecraft не бывает. Гадать и нагружать API
+     * незачем — подсвечиваем прямо сейчас, без запроса.
+     */
+    if (name.length < 3) {
+      setSubmitErrors((prev) => ({ ...prev, username: true }));
+      return;
+    }
+
+    /* От трёх символов и дальше ник проверяет сервер. */
+    setSubmitErrors((prev) => ({ ...prev, username: false }));
+
+    usernameTimerRef.current = setTimeout(() => {
+      usernameTimerRef.current = null;
+      void runUsernameCheck(name, requestNumber);
+    }, CHECK_DELAY);
+  };
+
   const handlePayClick = async () => {
     if (isFlashing || isProcessing) return;
     setIsProcessing(true);
@@ -473,6 +557,19 @@ export const TokenBlock = () => {
      * у /create-order.
      */
     const promoRequestNumber = ++promoRequestRef.current;
+
+    /*
+     * Незавершённые отложенные проверки ника из ввода гасим:
+     * авторитетная проверка происходит здесь, а поздний ответ
+     * из ввода мог бы перекрыть её решение по устаревшему
+     * значению поля.
+     */
+    if (usernameTimerRef.current !== null) {
+      clearTimeout(usernameTimerRef.current);
+      usernameTimerRef.current = null;
+    }
+
+    usernameRequestRef.current += 1;
 
     const isUsernameLocalError = username.length < 3;
 

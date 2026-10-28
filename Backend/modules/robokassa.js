@@ -87,7 +87,7 @@ async function giveTokens(username, tokenAmount) {
    * и не могут изменить структуру команды.
    */
   const command = [
-    'skript_action',
+    'skript_token_action',
     username,
     String(tokenAmount),
     'Покупка'
