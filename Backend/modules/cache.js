@@ -16,7 +16,7 @@ async function updateLatestsCache() {
   try {
     const [rows] = await dbPool.query(`
       SELECT username, action
-      FROM revizemc_skript.action
+      FROM revizemc_api.action
       WHERE type = 'Покупка'
       ORDER BY \`row\` DESC
       LIMIT 10

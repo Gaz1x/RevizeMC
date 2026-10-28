@@ -26,8 +26,8 @@ const invalidResponse = {
  * Владелец живёт в схеме revizemc_servervariables, разнесённой
  * на две таблицы:
  *
- *   servervariables_players       — UUID и PLAYER_NAME игрока;
- *   servervariables_players_values — переменные, привязанные к UUID,
+ *   servervariables_players          — UUID и PLAYER_NAME игрока;
+ *   servervariables_players_variables — переменные, привязанные к UUID,
  *                                    где NAME — тип переменной,
  *                                    а VALUE — её значение.
  *
@@ -80,7 +80,7 @@ export async function linkCodeBelongsTo(code, username) {
     const [valueRows] = await dbPool.query(
       `
       SELECT 1
-      FROM revizemc_servervariables.servervariables_players_values
+      FROM revizemc_servervariables.servervariables_players_variables
       WHERE UUID = ?
         AND NAME = 'code'
         AND VALUE = ?

@@ -154,7 +154,7 @@ ordersRouter.post('/', async (req, res) => {
      */
     await dbPool.query(
       `
-      INSERT INTO revizemc_robokassa.robokassa_orders
+      INSERT INTO revizemc_api.orders
         (
           invoice_id,
           username,

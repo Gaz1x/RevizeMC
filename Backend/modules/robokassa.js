@@ -10,6 +10,7 @@ import {
   normalizeAmount
 } from '../lib/validators.js';
 import { updateLatestsCache } from './cache.js';
+import { consumePromocode } from './promocode.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -150,7 +151,7 @@ robokassaRouter.post('/result', async (req, res) => {
         token_amount,
         amount,
         status
-      FROM revizemc_robokassa.robokassa_orders
+      FROM revizemc_api.orders
       WHERE invoice_id = ?
       FOR UPDATE
       `,
@@ -208,13 +209,28 @@ robokassaRouter.post('/result', async (req, res) => {
 
     await connection.query(
       `
-      UPDATE revizemc_robokassa.robokassa_orders
+      UPDATE revizemc_api.orders
       SET
         status = 'paid',
         paid_at = NOW()
       WHERE invoice_id = ?
       `,
       [InvId]
+    );
+
+    /*
+     * Списание промокода — ВНУТРИ транзакции, до commit: код
+     * списывается ровно в тот момент, когда заказ становится
+     * оплаченным, либо не списывается вовсе вместе с откатом.
+     *
+     * Вызывается здесь, а не при создании заказа: между созданием
+     * и оплатой человек мог так и не заплатить. Пустой промокод
+     * (NULL в заказе) пропускается внутри функции.
+     */
+    await consumePromocode(
+      connection,
+      order.promocode,
+      order.username
     );
 
     await connection.commit();
@@ -227,14 +243,27 @@ robokassaRouter.post('/result', async (req, res) => {
 
       await connection.query(
         `
-        UPDATE revizemc_robokassa.robokassa_orders
+        UPDATE revizemc_api.orders
         SET command_sent_at = NOW()
         WHERE invoice_id = ?
         `,
         [InvId]
       );
 
-      await updateLatestsCache();
+      /*
+       * Обновление кэша «последние покупки» — косметика.
+       * Его сбой не должен помечать заказ как не выданный:
+       * токены через tmux уже ушли, а пометка delivery_failed
+       * привела бы к повторной выдаче и дублю токенов.
+       */
+      try {
+        await updateLatestsCache();
+      } catch (cacheError) {
+        console.error(
+          'Не удалось обновить кэш покупок:',
+          cacheError
+        );
+      }
 
       return res.send(`OK${InvId}`);
     } catch (deliveryError) {
@@ -242,7 +271,7 @@ robokassaRouter.post('/result', async (req, res) => {
 
       await dbPool.query(
         `
-        UPDATE revizemc_robokassa.robokassa_orders
+        UPDATE revizemc_api.orders
         SET
           status = 'delivery_failed',
           last_error = ?
@@ -299,7 +328,7 @@ deliveryRouter.post('/retry', async (req, res) => {
     const [rows] = await dbPool.query(
       `
       SELECT invoice_id, username, token_amount
-      FROM revizemc_robokassa.robokassa_orders
+      FROM revizemc_api.orders
       WHERE invoice_id = ?
         AND status = 'delivery_failed'
         AND command_sent_at IS NULL
@@ -323,7 +352,7 @@ deliveryRouter.post('/retry', async (req, res) => {
 
     await dbPool.query(
       `
-      UPDATE revizemc_robokassa.robokassa_orders
+      UPDATE revizemc_api.orders
       SET
         command_sent_at = NOW(),
         status = 'paid',
