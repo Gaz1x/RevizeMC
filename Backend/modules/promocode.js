@@ -23,11 +23,20 @@ const invalidResponse = {
  * Проверяет, принадлежит ли LINK-промокод игроку.
  *
  * В revizeapi_promo.codes лежит только тип бонуса, а не владелец.
- * Владелец определяется по revizemc_servervariables.servervariables_players —
- * там одна строка на переменную игрока: NAME — тип переменной,
- * VALUE — её значение, PLAYER_NAME — кому она выдана.
- * Нам нужна строка с типом 'code' и этим промокодом в значении:
- * её PLAYER_NAME и есть владелец.
+ * Владелец живёт в схеме revizemc_servervariables, разнесённой
+ * на две таблицы:
+ *
+ *   servervariables_players       — UUID и PLAYER_NAME игрока;
+ *   servervariables_players_values — переменные, привязанные к UUID,
+ *                                    где NAME — тип переменной,
+ *                                    а VALUE — её значение.
+ *
+ * Поэтому проверка двухшаговая: сначала находим UUID по нику,
+ * затем ищем у этого UUID переменную 'code' с нашим промокодом.
+ * Найденная строка означает: код выдан именно этому игроку.
+ *
+ * Регистр ника не важен — его снимает коллация MySQL, на которую
+ * полагается players.js.
  *
  * Возвращает true, если код можно применять этому игроку.
  *
@@ -39,39 +48,48 @@ const invalidResponse = {
  */
 export async function linkCodeBelongsTo(code, username) {
   try {
-    const [rows] = await dbPool.query(
+    /*
+     * Шаг 1: UUID игрока по нику.
+     * Пустой результат — игрока нет в таблице, проверить не на кого.
+     * Для реального владельца LINK-кода такая строка обязана
+     * существовать, поэтому отказ здесь корректен.
+     */
+    const [playerRows] = await dbPool.query(
       `
-      SELECT PLAYER_NAME
+      SELECT UUID
       FROM revizemc_servervariables.servervariables_players
-      WHERE NAME = 'code'
-        AND VALUE = ?
+      WHERE PLAYER_NAME = ?
       LIMIT 1
       `,
-      [code]
+      [username]
     );
 
-    /*
-     * Строки владельца нет: код никем не выдан, а значит —
-     * не выдан и этому игроку. Отказываем, иначе свободный
-     * LINK-код смог бы активировать кто угодно.
-     */
-    if (rows.length === 0) {
+    if (playerRows.length === 0) {
       console.warn(
-        `LINK-промокод "${code}" не найден в servervariables_players`
+        `Игрок "${username}" не найден в servervariables_players, ` +
+        `проверка LINK-промокода "${code}" невозможна`
       );
 
       return false;
     }
 
-    const owner = String(rows[0].PLAYER_NAME || '');
-
     /*
-     * Сравниваем без учёта регистра: Minecraft не различает
-     * регистр ников, и SQL-запросы проекта (players.js) полагаются
-     * на регистронезависую коллацию. Здесь же мы сравниваем в JS,
-     * поэтому регистр снимаем руками.
+     * Шаг 2: есть ли у этого UUID переменная 'code'
+     * с этим промокодом в значении.
      */
-    return owner.toLowerCase() === String(username).toLowerCase();
+    const [valueRows] = await dbPool.query(
+      `
+      SELECT 1
+      FROM revizemc_servervariables.servervariables_players_values
+      WHERE UUID = ?
+        AND NAME = 'code'
+        AND VALUE = ?
+      LIMIT 1
+      `,
+      [playerRows[0].UUID, code]
+    );
+
+    return valueRows.length > 0;
   } catch (error) {
     console.error('Ошибка проверки владельца LINK-промокода:', error);
 

@@ -381,6 +381,19 @@ export const TokenBlock = () => {
     if (isFlashing || isProcessing) return;
     setIsProcessing(true);
 
+    /*
+     * Номер этой проверки промокода захватывается ДО первых await
+     * и сверяется после каждого из них.
+     *
+     * Пока ждём ответа сервера, поле промокода могут очистить —
+     * и без сверки устаревший ответ покрасил бы уже пустое поле
+     * (300мс ошибки плюс CSS-переход). Побочный эффект бампа —
+     * отбрасываются и незавершённые отложенные проверки из ввода:
+     * их результат всё равно предварительный, авторитетный —
+     * у /create-order.
+     */
+    const promoRequestNumber = ++promoRequestRef.current;
+
     const isUsernameLocalError = username.length < 3;
 
     const promoValue = promocode.trim();
@@ -426,26 +439,34 @@ export const TokenBlock = () => {
        */
       const result = await checkPromocode(promoValue, username);
 
-      if (result.status === "invalid") {
-        isPromoServerError = true;
-      } else if (result.status === "valid") {
-        if (result.alreadyUsed || result.notOwned) {
-          /*
-           * Код настоящий, скидка на него есть, но этому игроку
-           * он недоступен: уже тратился (uses) либо выдан другому
-           * (LINK через servervariables_players). Подсвечиваем поле
-           * и не пускаем оплату.
-           */
+      /*
+       * Поле изменилось, пока ждали ответа — результат отбрасываем
+       * целиком: он относится к значению, которого в поле уже нет.
+       * Финальное слово всё равно за /create-order, он проверит
+       * промокод заново по уже отправленным данным.
+       */
+      if (promoRequestNumber === promoRequestRef.current) {
+        if (result.status === "invalid") {
           isPromoServerError = true;
-        } else {
-          setDiscount(result.discount);
-          setCheckedPromo(promoValue);
+        } else if (result.status === "valid") {
+          if (result.alreadyUsed || result.notOwned) {
+            /*
+             * Код настоящий, скидка на него есть, но этому игроку
+             * он недоступен: уже тратился (uses) либо выдан другому
+             * (LINK через servervariables_players). Подсвечиваем поле
+             * и не пускаем оплату.
+             */
+            isPromoServerError = true;
+          } else {
+            setDiscount(result.discount);
+            setCheckedPromo(promoValue);
+          }
+          /*
+           * status === "unavailable" — проверить не удалось.
+           * Оплату не блокируем: промокод опционален, а финальное
+           * слово всё равно за /create-order на сервере.
+           */
         }
-        /*
-         * status === "unavailable" — проверить не удалось.
-         * Оплату не блокируем: промокод опционален, а финальное
-         * слово всё равно за /create-order на сервере.
-         */
       }
     }
 
