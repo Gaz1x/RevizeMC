@@ -8,21 +8,97 @@ import {
   useBreakpointValue,
   Button,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "./images/logo.png";
+import { playSuccessSound } from "../utils/playSound";
 
-export const Navbar = () => {
+type OnlineResponse = {
+  total?: number;
+  servers?: Array<{
+    id: string;
+    players: number;
+  }>;
+};
+
+const getPlayersWord = (count: number) => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod100 >= 11 && mod100 <= 14) return "игроков";
+  if (mod10 === 1) return "игрок";
+  if (mod10 >= 2 && mod10 <= 4) return "игрока";
+
+  return "игроков";
+};
+
+interface NavbarProps {
+  recordBoxWidth?: { base?: string; xl?: string };
+}
+
+export const Navbar = ({ recordBoxWidth = { base: "140px", xl: "396px" } }: NavbarProps) => {
   const { onCopy } = useClipboard("revizemc.net");
 
   const [isAnimating, setIsAnimating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [totalPlayers, setTotalPlayers] = useState(0);
 
   const isDesktop = useBreakpointValue({ base: false, xl: true });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchOnline = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      try {
+        const response = await fetch("https://api.revizemc.net/online", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Ошибка сервера");
+        }
+
+        const data: OnlineResponse = await response.json();
+
+        if (!isMounted) return;
+
+        if (typeof data.total === "number" && Number.isFinite(data.total)) {
+          setTotalPlayers(data.total);
+        }
+        
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.name !== "AbortError" &&
+          isMounted
+        ) {
+          console.error("Ошибка при получении онлайна:", error);
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    void fetchOnline();
+    const intervalId = setInterval(() => void fetchOnline(), 10_000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
+
+
 
   const handleCopy = () => {
     if (!isDesktop || isAnimating) return;
 
     onCopy();
+
+    playSuccessSound();
+
     setIsAnimating(true);
     setCopied(true);
 
@@ -166,47 +242,26 @@ export const Navbar = () => {
           justify={{ base: "center", xl: "flex-end" }}
           display={{ base: "none", xl: "flex" }}
         >
-          <Button
-            as="a"
-            href="https://discord.gg/SJpQDQcJvG"
-            target="_blank"
-            w={{ base: "140px", xl: "192px" }}
-            h={{ base: "45px", xl: "64px" }}
-            color="white"
-            bgColor="transparent"
+          <Box
             border="solid #80bFFF"
             borderWidth={{ xl: "6px", base: "4px" }}
             borderRadius={{ xl: "14px", base: "12px" }}
-            fontFamily="heading"
-            fontSize={{ base: "14px", xl: "24px" }}
-            transition="all 0.3s ease-out"
-            cursor="pointer"
-            _hover={{ transform: "scale(0.95)", borderColor: "white" }}
-            _active={{ transform: "scale(0.9)" }}
-          >
-            DISCORD
-          </Button>
-
-          <Button
-            as="a"
-            href="https://t.me/revizemc"
-            target="_blank"
-            w={{ base: "140px", xl: "192px" }}
+            w={recordBoxWidth}
             h={{ base: "45px", xl: "64px" }}
-            color="white"
-            bgColor="transparent"
-            border="solid #80bFFF"
-            borderWidth={{ xl: "6px", base: "4px" }}
-            borderRadius={{ xl: "14px", base: "12px" }}
-            fontFamily="heading"
-            fontSize={{ base: "14px", xl: "24px" }}
-            transition="all 0.3s ease-out"
-            cursor="pointer"
-            _hover={{ transform: "scale(0.95)", borderColor: "white" }}
-            _active={{ transform: "scale(0.9)" }}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            cursor="default"
           >
-            TELEGRAM
-          </Button>
+            <Text
+              color="white"
+              fontFamily="heading"
+              fontSize={{ base: "14px", xl: "24px" }}
+              lineHeight="1"
+            >
+              {totalPlayers} {getPlayersWord(totalPlayers)}
+            </Text>
+          </Box>
         </Flex>
       </Flex>
     </Flex>

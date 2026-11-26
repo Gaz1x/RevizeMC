@@ -15,9 +15,9 @@ let isCacheReady = false;
 async function updateLatestsCache() {
   try {
     const [rows] = await dbPool.query(`
-      SELECT username, action
+      SELECT username, token
       FROM revizemc_api.action
-      WHERE type = 'Покупка'
+      WHERE action = 'Покупка'
       ORDER BY \`row\` DESC
       LIMIT 10
     `);

@@ -15,9 +15,15 @@ import {
   SimpleGrid,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import buyingLogo from "./images/token.png";
+import {
+  playClickSound,
+  playErrorSound,
+  playSliderTick,
+  playSuccessSound,
+} from "../../utils/playSound";
 
 const TOKEN_OPTIONS = [
   1000, 2000, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000,
@@ -131,6 +137,32 @@ export const TokenBlock = () => {
   });
 
   const [isFlashing, setIsFlashing] = useState(false);
+
+  /*
+   * Звук слайдера.
+   *
+   * onChange во время перетаскивания приходит десятки раз в секунду,
+   * поэтому тикаем только тогда, когда ползунок перешёл на другую
+   * дискретную ступеньку TOKEN_OPTIONS. sliderTickedRef запоминает,
+   * был ли тик за текущий жест: простой тап по ползунку без движения
+   * не меняет ступеньку и озвучивается уже в onChangeEnd.
+   */
+  const sliderSnapRef = useRef(Math.round(smoothValue));
+  const sliderTickedRef = useRef(false);
+
+  /*
+   * Последний озвученный вердикт проверок. Debounce-проверка ника
+   * и промокода срабатывает после каждой паузы в вводе — без этой
+   * памяти звук повторялся бы на каждый символ.
+   */
+  const usernameVerdictRef = useRef<{
+    name: string;
+    exists: boolean;
+  } | null>(null);
+
+  const promoVerdictRef = useRef<{ key: string; ok: boolean } | null>(
+    null,
+  );
 
   /*
    * Отложенная проверка не должна пережить размонтирование компонента.
@@ -263,13 +295,37 @@ export const TokenBlock = () => {
 
     if (requestNumber !== promoRequestRef.current) return;
 
+    /*
+     * Звук вердикта — один раз на пару «код + ник». Повторная
+     * проверка того же значения (blur, клик по оплате) молчит.
+     */
+    const announce = (ok: boolean) => {
+      const key = promoConfirmationKey(code, username);
+      const previous = promoVerdictRef.current;
+
+      if (!previous || previous.key !== key || previous.ok !== ok) {
+        promoVerdictRef.current = { key, ok };
+
+        if (ok) {
+          playSuccessSound();
+        } else {
+          playErrorSound();
+        }
+      }
+    };
+
     if (result.status === "invalid") {
       setDiscount(null);
       setCheckedPromo("");
       setSubmitErrors((prev) => ({ ...prev, promocode: true }));
+      announce(false);
       return;
     }
 
+    /*
+     * Проверить не удалось (сеть, лимит) — это не «неверный код».
+     * Молчим: звук ошибки здесь только пугал бы пользователя.
+     */
     if (result.status === "unavailable") return;
 
     /*
@@ -281,12 +337,14 @@ export const TokenBlock = () => {
       setDiscount(null);
       setCheckedPromo("");
       setSubmitErrors((prev) => ({ ...prev, promocode: true }));
+      announce(false);
       return;
     }
 
     setDiscount(result.discount);
     setCheckedPromo(promoConfirmationKey(code, username));
     setSubmitErrors((prev) => ({ ...prev, promocode: false }));
+    announce(true);
   };
 
   /*
@@ -324,6 +382,7 @@ export const TokenBlock = () => {
      */
     if (code === "") {
       setSubmitErrors((prev) => ({ ...prev, promocode: false }));
+      promoVerdictRef.current = null;
       return;
     }
 
@@ -513,6 +572,23 @@ export const TokenBlock = () => {
     if (exists === null) return;
 
     setSubmitErrors((prev) => ({ ...prev, username: !exists }));
+
+    /*
+     * Озвучиваем только смену вердикта для конкретного ника:
+     * иначе каждая пауза при вводе заканчивалась бы звуком.
+     */
+    const key = name.toLowerCase();
+    const previous = usernameVerdictRef.current;
+
+    if (!previous || previous.name !== key || previous.exists !== exists) {
+      usernameVerdictRef.current = { name: key, exists };
+
+      if (exists) {
+        playSuccessSound();
+      } else {
+        playErrorSound();
+      }
+    }
   };
 
   /*
@@ -531,6 +607,7 @@ export const TokenBlock = () => {
     /* Пусто — ввод отменён, подсвечивать нечего. */
     if (name === "") {
       setSubmitErrors((prev) => ({ ...prev, username: false }));
+      usernameVerdictRef.current = null;
       return;
     }
 
@@ -559,6 +636,13 @@ export const TokenBlock = () => {
   const handlePayClick = async () => {
     if (isFlashing || isProcessing) return;
     setIsProcessing(true);
+
+    /*
+     * После успешного создания заказа кнопка остаётся в состоянии
+     * загрузки до перехода на оплату: иначе в паузе, пока играет
+     * звук успеха, по ней можно было бы кликнуть ещё раз.
+     */
+    let isRedirecting = false;
 
     /*
      * Номер этой проверки промокода захватывается ДО первых await
@@ -689,6 +773,7 @@ export const TokenBlock = () => {
         documents: isDocumentsError,
       });
 
+      playErrorSound();
       setIsFlashing(true);
 
       setTimeout(() => {
@@ -724,8 +809,17 @@ export const TokenBlock = () => {
         setDocumentsAccepted(false);
         setTokens(1000);
         setSmoothValue(TOKEN_OPTIONS.indexOf(1000));
+        sliderSnapRef.current = TOKEN_OPTIONS.indexOf(1000);
 
-        window.location.href = purchaseData.paymentUrl;
+        /*
+         * Даём звуку успеха начать играть: переход на страницу оплаты
+         * выгружает документ и обрывает аудио на полуслове.
+         */
+        isRedirecting = true;
+        playSuccessSound();
+        window.setTimeout(() => {
+          window.location.href = purchaseData.paymentUrl;
+        }, 250);
       } else {
         console.error(purchaseData);
 
@@ -750,6 +844,7 @@ export const TokenBlock = () => {
           documents: false,
         });
 
+        playErrorSound();
         setIsFlashing(true);
 
         setTimeout(() => {
@@ -764,31 +859,85 @@ export const TokenBlock = () => {
        * поля, таймером её не гасим.
        */
       setSubmitErrors((prev) => ({ ...prev, username: true }));
+      playErrorSound();
       setIsFlashing(true);
       setTimeout(() => setIsFlashing(false), 600);
     } finally {
-      setIsProcessing(false);
+      if (!isRedirecting) {
+        setIsProcessing(false);
+      }
     }
   };
 
   const handleSliderChange = (val: number) => {
+    const snappedIdx = Math.round(val);
+
+    /*
+     * Тик на каждое пересечение ступеньки, а не на каждый пиксель
+     * движения: иначе перетаскивание звучало бы пулемётом.
+     */
+    if (snappedIdx !== sliderSnapRef.current) {
+      sliderSnapRef.current = snappedIdx;
+      sliderTickedRef.current = true;
+
+      /*
+       * Питч привязан к позиции на слайдере: у нижнего края клик
+       * ниже, у верхнего — выше. Считаем по индексу ступеньки,
+       * а не по количеству токенов: иначе весь диапазон высоты
+       * пришёлся бы на последний шаг.
+       */
+      playSliderTick(snappedIdx / (TOKEN_OPTIONS.length - 1));
+    }
+
     setSmoothValue(val);
-    setTokens(TOKEN_OPTIONS[Math.round(val)]);
+    setTokens(TOKEN_OPTIONS[snappedIdx]);
+  };
+
+  const handleSliderChangeStart = () => {
+    /*
+     * Флаг здесь не сбрасываем: Chakra на старте pan сначала вызывает
+     * onChange (тик уже сыграл и выставил флаг), и только потом
+     * onChangeStart. Сброс в этом месте приводил бы к двойному звуку —
+     * тик плюс клик на отпускании.
+     */
+    setIsDragging(true);
   };
 
   const handleSliderChangeEnd = (val: number) => {
     const snappedIdx = Math.round(val);
+
+    sliderSnapRef.current = snappedIdx;
+
+    /*
+     * Тап по ползунку без движения ступеньку не меняет — onChange
+     * не сработает, поэтому озвучиваем нажатие здесь.
+     */
+    if (!sliderTickedRef.current) {
+      playClickSound();
+    }
+
+    sliderTickedRef.current = false;
     setSmoothValue(snappedIdx);
     setIsDragging(false);
   };
 
-  const handleQuickSelect = (amount: number) => {
+  /*
+   * Стабильная ссылка: сетка кнопок мемоизируется ниже, и новая
+   * функция на каждый рендер ломала бы эту мемоизацию.
+   */
+  const handleQuickSelect = useCallback((amount: number) => {
     const idx = TOKEN_OPTIONS.indexOf(amount);
+
     if (idx !== -1) {
+      playSuccessSound();
+
+      sliderSnapRef.current = idx;
+      sliderTickedRef.current = false;
+
       setSmoothValue(idx);
       setTokens(amount);
     }
-  };
+  }, []);
 
   const getCheckboxStyles = (hasError: boolean) => ({
     ".chakra-checkbox__control": {
@@ -820,6 +969,60 @@ export const TokenBlock = () => {
       },
     },
   });
+
+  /*
+   * Во время перетаскивания ползунка smoothValue меняется на каждый
+   * pointermove. Без мемоизации React перерисовывал бы все 15
+   * Chakra-кнопок десятки раз в секунду — именно это и подвешивало
+   * блок. tokens меняется только при переходе на новую ступеньку.
+   */
+  const tokenGrid = useMemo(
+    () => (
+      <SimpleGrid
+        order={{ base: 1, xl: 2 }}
+        columns={{ base: 5, xl: 5 }}
+        spacing={{ base: 1.5, xl: 2 }}
+        mt={{ base: 0, xl: 3 }}
+        mb={{ base: 3, xl: 0 }}
+        w="full"
+      >
+        {TOKEN_OPTIONS.map((val) => {
+          const isActive = tokens === val;
+          const displayVal = isDesktop
+            ? `${val / 1000} 000`
+            : `${val / 1000}K`;
+
+          return (
+            <Button
+              key={val}
+              bg={isActive ? "#80ff80" : "#285928"}
+              color={isActive ? "#285928" : "white"}
+              border="solid #80ff80"
+              borderWidth={{ xl: "6px", base: "4px" }}
+              h={{ xl: "50px", base: "35px" }}
+              borderRadius={{ xl: "15px", base: "10px" }}
+              fontFamily="heading"
+              fontSize={{ xl: "16px", base: "10px" }}
+              p={0}
+              transition="all 0.3s ease-out"
+              onClick={() => handleQuickSelect(val)}
+              _hover={{
+                transform: "scale(0.95)",
+                borderColor: !isActive ? "white" : "transparent",
+                color: !isActive ? "white" : "#285928",
+              }}
+              _active={{
+                transform: "scale(0.9)",
+              }}
+            >
+              <Text lineHeight="1">{displayVal}</Text>
+            </Button>
+          );
+        })}
+      </SimpleGrid>
+    ),
+    [tokens, isDesktop, handleQuickSelect],
+  );
 
   return (
     <VStack
@@ -950,6 +1153,7 @@ export const TokenBlock = () => {
                   isChecked={documentsAccepted}
                   sx={getCheckboxStyles(submitErrors.documents)}
                   onChange={(e) => {
+                    playSuccessSound();
                     setDocumentsAccepted(e.target.checked);
                     setSubmitErrors((prev) => ({ ...prev, documents: false }));
                   }}
@@ -991,6 +1195,7 @@ export const TokenBlock = () => {
                   cursor="pointer"
                   onClick={(e) => {
                     e.stopPropagation();
+                    playSuccessSound();
                     window.open(
                       "https://www.revizemc.net/terms-of-service.pdf",
                       "_blank",
@@ -1029,6 +1234,7 @@ export const TokenBlock = () => {
                   cursor="pointer"
                   onClick={(e) => {
                     e.stopPropagation();
+                    playSuccessSound();
                     window.open(
                       "https://www.revizemc.net/privacy-policy.pdf",
                       "_blank",
@@ -1073,7 +1279,7 @@ export const TokenBlock = () => {
             w="full"
             role="group"
             onChange={handleSliderChange}
-            onChangeStart={() => setIsDragging(true)}
+            onChangeStart={handleSliderChangeStart}
             onChangeEnd={handleSliderChangeEnd}
             sx={{
               WebkitTapHighlightColor: "transparent !important",
@@ -1142,48 +1348,7 @@ export const TokenBlock = () => {
           </Slider>
         </Box>
 
-        <SimpleGrid
-          order={{ base: 1, xl: 2 }}
-          columns={{ base: 5, xl: 5 }}
-          spacing={{ base: 1.5, xl: 2 }}
-          mt={{ base: 0, xl: 3 }}
-          mb={{ base: 3, xl: 0 }}
-          w="full"
-        >
-          {TOKEN_OPTIONS.map((val) => {
-            const isActive = tokens === val;
-            const displayVal = isDesktop
-              ? `${val / 1000} 000`
-              : `${val / 1000}K`;
-
-            return (
-              <Button
-                key={val}
-                bg={isActive ? "#80ff80" : "#285928"}
-                color={isActive ? "#285928" : "white"}
-                border="solid #80ff80"
-                borderWidth={{ xl: "6px", base: "4px" }}
-                h={{ xl: "50px", base: "35px" }}
-                borderRadius={{ xl: "15px", base: "10px" }}
-                fontFamily="heading"
-                fontSize={{ xl: "16px", base: "10px" }}
-                p={0}
-                transition="all 0.3s ease-out"
-                onClick={() => handleQuickSelect(val)}
-                _hover={{
-                  transform: "scale(0.95)",
-                  borderColor: !isActive ? "white" : "transparent",
-                  color: !isActive ? "white" : "#285928",
-                }}
-                _active={{
-                  transform: "scale(0.9)",
-                }}
-              >
-                <Text lineHeight="1">{displayVal}</Text>
-              </Button>
-            );
-          })}
-        </SimpleGrid>
+        {tokenGrid}
       </Flex>
       <VStack align={{ base: "center", xl: "flex-end"}} mt={-2} mb={-2}>
         <Text

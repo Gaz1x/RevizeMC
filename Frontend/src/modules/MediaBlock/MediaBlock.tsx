@@ -8,6 +8,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
+import { playSuccessSound } from "../../utils/playSound";
 import mediaLogo from "./images/media.png";
 
 const MAIN_COLOR = "#FF8080";
@@ -22,6 +23,7 @@ const BENEFITS = [
 
 export const MediaBlock = () => {
   const handleJoinClick = () => {
+    playSuccessSound();
     window.open("https://t.me/revizemc?direct", "_blank");
   };
 

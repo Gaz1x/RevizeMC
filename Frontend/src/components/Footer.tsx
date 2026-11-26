@@ -1,4 +1,5 @@
 import { Box, Flex, Grid, Link, Text } from "@chakra-ui/react";
+import { playSuccessSound } from "../utils/playSound";
 
 const FOOTER_LINKS = [
   {
@@ -8,6 +9,10 @@ const FOOTER_LINKS = [
   {
     label: "ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ",
     href: "https://www.revizemc.net/privacy-policy.pdf",
+  },
+  {
+    label: "ПОРЯДОК ОПЛАТЫ И ВОЗВРАТА",
+    href: "https://www.revizemc.net/payments-policy.pdf",
   },
 ];
 
@@ -79,6 +84,7 @@ export const Footer = () => {
               href="mailto:admin@revizemc.net"
               color="inherit"
               transition="color 0.3s ease-in-out"
+              onClick={() => playSuccessSound()}
               _hover={{
                 color: "white",
                 textDecoration: "none",
@@ -90,14 +96,6 @@ export const Footer = () => {
         </Box>
 
         <Box textAlign={{ base: "center", xl: "right" }}>
-          <Text
-            {...baseTextStyles}
-            color="white"
-            fontSize={{ base: "12px", xl: "16px" }}
-          >
-            ПРАВОВАЯ ИНФОРМАЦИЯ
-          </Text>
-
           <Flex
             direction="column"
             alignItems={{ base: "center", xl: "flex-end" }}
@@ -108,6 +106,7 @@ export const Footer = () => {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => playSuccessSound()}
                 {...linkStyles}
               >
                 {label}

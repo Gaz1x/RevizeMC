@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ChakraProvider, Container, Box, Flex } from "@chakra-ui/react";
 
 import { Navbar } from "./components/Navbar";
@@ -10,9 +11,28 @@ import { Footer } from "./components/Footer";
 import { Credits } from "./components/Credits";
 
 import theme from "./theme";
+import { unlockSounds } from "./utils/playSound";
 import "./assets/dayssansblack.css";
 
 function App() {
+  /*
+   * iOS/Safari проигрывает звук только после действия пользователя.
+   * Первый pointerdown разблокирует аудио, чтобы отложенные звуки
+   * проверок (ответ сервера приходит позже) тоже были слышны.
+   *
+   * Слушатель постоянный: браузер может приостановить AudioContext
+   * при уходе со вкладки, и следующий жест должен его разбудить.
+   */
+  useEffect(() => {
+    const handleGesture = () => unlockSounds();
+
+    window.addEventListener("pointerdown", handleGesture);
+
+    return () => {
+      window.removeEventListener("pointerdown", handleGesture);
+    };
+  }, []);
+
   return (
     <ChakraProvider theme={theme}>
       <Box position="fixed" top={0} left={0} right={0} bottom={0} zIndex={-1} />

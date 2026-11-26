@@ -1,31 +1,32 @@
-import { Box, Text, Flex, SimpleGrid } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+const MOBILE_TRANSITION_MS = 500;
+const AUTOPLAY_MS = 5000;
 
 const SERVER_CONFIG = [
   {
     id: "sunset",
     name: "SUNSET",
     desc: (
-      <>
-        Реалистичное выживание <br /> с динамичными ивентами
-      </>
+      <>Реалистичное выживание <br /> с природными явлениями</>
     ),
     hoverColor: "255, 128, 255",
   },
   {
-    id: "classic",
-    name: "CLASSIC",
+    id: "modest",
+    name: "MODEST",
     desc: (
-      <>
-        Выживание в свободном <br /> мире без лишних правил
-      </>
+      <>Выживание в свободном<br />мире без лишних правил</>
     ),
     hoverColor: "255, 191, 64",
   },
   {
     id: "oceans",
     name: "OCEANS",
-    desc: <>Выживание в бесконечном океане с битвами за плоты</>,
+    desc: (
+      <>Выживание в бесконечном<br />океане с битвами за плоты</>
+    ),
     hoverColor: "64, 217, 217",
   },
 ];
@@ -41,14 +42,34 @@ const getPlayersWord = (count: number) => {
   return "игроков";
 };
 
+type OnlineResponse = {
+  total?: number;
+  servers?: Array<{
+    id: string;
+    players: number;
+  }>;
+};
+
 export const ServerBlock = () => {
-  const [servers, setServers] = useState(
+  const [servers, setServers] = useState(() =>
     SERVER_CONFIG.map((server) => ({ ...server, players: 0 })),
   );
-
   const [totalOnline, setTotalOnline] = useState(0);
 
+  // Состояние мобильной карусели
+  const [mobilePage, setMobilePage] = useState(0);
+  const [isMobileVisible, setIsMobileVisible] = useState(true);
+
+  const mobilePageRef = useRef(0);
+  const isTransitioningRef = useRef(false);
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  // Загрузка онлайна
   useEffect(() => {
+    let isMounted = true;
+
     const fetchOnline = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -62,24 +83,33 @@ export const ServerBlock = () => {
           throw new Error("Ошибка сервера");
         }
 
-        const data = await response.json();
+        const data: OnlineResponse = await response.json();
 
-        setTotalOnline(data.total);
+        if (!isMounted) return;
 
-        setServers((prevServers) =>
-          prevServers.map((server) => {
-            const updatedServer = data.servers.find(
-              (item: { id: string }) =>
-                item.id.toLowerCase() === server.id.toLowerCase(),
-            );
+        if (typeof data.total === "number") {
+          setTotalOnline(data.total);
+        }
 
-            return updatedServer
-              ? { ...server, players: updatedServer.players }
-              : server;
-          }),
-        );
+        if (Array.isArray(data.servers)) {
+          setServers((prevServers) =>
+            prevServers.map((server) => {
+              const updatedServer = data.servers?.find(
+                (item) => item.id.toLowerCase() === server.id.toLowerCase(),
+              );
+
+              return updatedServer
+                ? { ...server, players: updatedServer.players }
+                : server;
+            }),
+          );
+        }
       } catch (error) {
-        if (error instanceof Error && error.name !== "AbortError") {
+        if (
+          error instanceof Error &&
+          error.name !== "AbortError" &&
+          isMounted
+        ) {
           console.error("Ошибка при получении онлайна:", error);
         }
       } finally {
@@ -87,12 +117,62 @@ export const ServerBlock = () => {
       }
     };
 
-    fetchOnline();
+    void fetchOnline();
+    const intervalId = setInterval(() => void fetchOnline(), 10_000);
 
-    const intervalId = setInterval(fetchOnline, 10000);
-
-    return () => clearInterval(intervalId);
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
+
+  // Переключение страницы мобильной карусели с анимацией
+  const goToPage = useCallback((newPage: number) => {
+    if (
+      isTransitioningRef.current ||
+      newPage === mobilePageRef.current ||
+      newPage < 0 ||
+      newPage >= SERVER_CONFIG.length
+    ) {
+      return;
+    }
+
+    isTransitioningRef.current = true;
+    setIsMobileVisible(false);
+
+    transitionTimeoutRef.current = setTimeout(() => {
+      mobilePageRef.current = newPage;
+      setMobilePage(newPage);
+      setIsMobileVisible(true);
+
+      transitionTimeoutRef.current = setTimeout(() => {
+        isTransitioningRef.current = false;
+      }, MOBILE_TRANSITION_MS);
+    }, MOBILE_TRANSITION_MS);
+  }, []);
+
+  // Автопролистывание. Таймер перезапускается при каждой смене страницы,
+  // поэтому ручное нажатие на точку тоже сбрасывает отсчёт.
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      goToPage((mobilePage + 1) % SERVER_CONFIG.length);
+    }, AUTOPLAY_MS);
+
+    return () => clearTimeout(timeoutId);
+  }, [mobilePage, goToPage]);
+
+  // Очистка таймера перехода при размонтировании
+  useEffect(
+    () => () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
+  const mobileServer = servers[mobilePage];
+  const mobileColor = `rgb(${mobileServer.hoverColor})`;
 
   return (
     <>
@@ -106,7 +186,9 @@ export const ServerBlock = () => {
         `}
       </style>
 
+      {/* Десктоп: сетка из трёх карточек */}
       <SimpleGrid
+        display={{ base: "none", xl: "grid" }}
         columns={{ base: 1, xl: 3 }}
         spacing={{ base: "15px", xl: "30px" }}
         w="full"
@@ -129,9 +211,9 @@ export const ServerBlock = () => {
               h="full"
               border="solid"
               borderColor={color}
-              borderWidth={{ base: "4px", xl: "6px" }}
+              borderWidth="6px"
               borderRadius="20px"
-              p={{ base: 2.5, xl: 4 }}
+              p={4}
               transition="border-color 0.3s ease-in-out"
               _before={{
                 content: '""',
@@ -144,7 +226,6 @@ export const ServerBlock = () => {
                 opacity: 1,
                 transition: "opacity 0.3s ease-in-out",
               }}
-
               _after={{
                 content: '""',
                 position: "absolute",
@@ -156,7 +237,6 @@ export const ServerBlock = () => {
                 opacity: 0,
                 transition: "opacity 0.3s ease-in-out",
               }}
-
               _hover={{
                 borderColor: color,
                 _before: { opacity: 0 },
@@ -167,7 +247,7 @@ export const ServerBlock = () => {
                 <Text
                   color={color}
                   fontFamily="heading"
-                  fontSize={{ base: "xl", xl: "2xl" }}
+                  fontSize="2xl"
                   lineHeight="1.2"
                   mb={3}
                   transition="color 0.3s ease-in-out"
@@ -180,7 +260,7 @@ export const ServerBlock = () => {
                   w="full"
                   color="white"
                   fontFamily="heading"
-                  fontSize={{ base: "17px", xl: "lg" }}
+                  fontSize="lg"
                   textAlign="left"
                   lineHeight="1.2"
                   mb={4}
@@ -195,7 +275,7 @@ export const ServerBlock = () => {
                 w="full"
                 color={color}
                 fontFamily="heading"
-                fontSize={{ base: "xl", xl: "lg" }}
+                fontSize="lg"
                 lineHeight="1"
                 textAlign="right"
                 transition="color 0.3s ease-in-out"
@@ -207,6 +287,110 @@ export const ServerBlock = () => {
           );
         })}
       </SimpleGrid>
+
+      {/* Мобильная версия: карусель с анимацией и точками внутри карточки */}
+      <Flex
+        display={{ base: "flex", xl: "none" }}
+        direction="column"
+        w="full"
+        maxW="370px"
+        mt="15px"
+        mx="auto"
+      >
+        <Flex
+          position="relative"
+          overflow="hidden"
+          direction="column"
+          justifyContent="space-between"
+          w="full"
+          border="solid"
+          borderColor={mobileColor}
+          borderWidth="4px"
+          borderRadius="20px"
+          p={2.5}
+          transition={`border-color ${MOBILE_TRANSITION_MS}ms ease-in-out`}
+          _before={{
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            borderRadius: "10px",
+            bgGradient: `linear(to-t, transparent, rgba(${mobileServer.hoverColor}, 0.15))`,
+            opacity: isMobileVisible ? 1 : 0,
+            transition: `opacity ${MOBILE_TRANSITION_MS}ms ease-in-out`,
+          }}
+        >
+          {/* Точки страниц в правом верхнем углу карточки */}
+          <Flex
+            position="absolute"
+            top="10px"
+            right="12px"
+            zIndex={2}
+            gap="8px"
+            align="center"
+            h="8px"
+          >
+            {SERVER_CONFIG.map((server, index) => (
+              <Box
+                key={server.id}
+                w="8px"
+                h="8px"
+                border="none"
+                borderRadius="50%"
+                bg={index === mobilePage ? mobileColor : "white"}
+                transition={`background-color ${MOBILE_TRANSITION_MS}ms ease-in-out`}
+              />
+            ))}
+          </Flex>
+
+          <Box
+            position="relative"
+            zIndex={1}
+            opacity={isMobileVisible ? 1 : 0}
+            transition={`opacity ${MOBILE_TRANSITION_MS}ms ease-in-out`}
+          >
+            <Text
+              color={mobileColor}
+              fontFamily="heading"
+              fontSize="xl"
+              lineHeight="1.2"
+              mb={3}
+              pr="48px"
+              transition={`color ${MOBILE_TRANSITION_MS}ms ease-in-out`}
+            >
+              {mobileServer.name}
+            </Text>
+
+            <Text
+              w="full"
+              color="white"
+              fontFamily="heading"
+              fontSize="17px"
+              textAlign="left"
+              lineHeight="1.2"
+              mb={4}
+            >
+              {mobileServer.desc}
+            </Text>
+          </Box>
+
+          <Text
+            position="relative"
+            zIndex={1}
+            w="full"
+            color={mobileColor}
+            fontFamily="heading"
+            fontSize="17px"
+            lineHeight="1"
+            textAlign="right"
+            opacity={isMobileVisible ? 1 : 0}
+            transition={`opacity ${MOBILE_TRANSITION_MS}ms ease-in-out, color ${MOBILE_TRANSITION_MS}ms ease-in-out`}
+          >
+            {mobileServer.players} {getPlayersWord(mobileServer.players)}
+          </Text>
+        </Flex>
+      </Flex>
     </>
   );
 };

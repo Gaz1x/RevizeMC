@@ -1,5 +1,6 @@
 import { Button, HStack, Image, Text, VStack } from "@chakra-ui/react";
 
+import { playSuccessSound } from "../../utils/playSound";
 import socialLogo from "./images/social.png";
 
 const MAIN_COLOR = "#FFFF80";
@@ -42,6 +43,7 @@ const buttonStyles = {
 
 export const SocialBlock = () => {
   const openLink = (url: string) => {
+    playSuccessSound();
     window.open(url, "_blank", "noopener,noreferrer");
   };
 

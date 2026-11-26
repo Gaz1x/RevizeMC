@@ -14,7 +14,7 @@ import LatestLogo from "./images/latest.png";
 
 interface Latest {
   username: string;
-  action: number;
+  token: number;
 }
 
 export const LatestBlock = () => {
@@ -138,7 +138,7 @@ export const LatestBlock = () => {
                   fontFamily="heading"
                   fontSize={{ base: "md", xl: "lg" }}
                 >
-                  {latest.action} ТОКЕНОВ
+                  {latest.token} ТОКЕНОВ
                 </Text>
               </Flex>
             );
