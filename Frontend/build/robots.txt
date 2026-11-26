@@ -1,5 +1,0 @@
-User-agent: *
-Disallow: /terms-of-service.pdf
-Disallow: /privacy-policy.pdf
-
-Sitemap: https://www.revizemc.net/sitemap.xml
